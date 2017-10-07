@@ -23,6 +23,6 @@ ws.on('connection', socket => {
   socket.emit('news', { hello: 'world' });
 
   socket.on('ping', (data) => {
-    console.log('pong')
+    socket.emit('pong', data);
   })
 });
