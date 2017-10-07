@@ -1,0 +1,28 @@
+{
+  "name": "dispo-api",
+  "version": "0.0.1",
+  "description": "Back-end API for dispo app",
+  "engines": {
+    "node": "8.6.0"
+  },
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "ejs": "2.5.6",
+    "express": "4.15.2"
+  },
+  "devDependencies": {
+    "mocha": "^4.0.1",
+    "prettier": "^1.7.4",
+    "request": "^2.81.0",
+    "tape": "^4.7.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chipp972/dispo-api"
+  },
+  "license": "MIT"
+}
