@@ -2,7 +2,7 @@ const Redis = require('ioredis');
 
 const redisURL =
   process.env.NODE_ENV === 'production'
-    ? process.env.REDIS_URl
+    ? process.env.REDIS_URL
     : {
         port: 6379,
         host: '127.0.0.1',
