@@ -6,9 +6,8 @@ import Redis from 'ioredis';
 export default function initRoutes(database: Redis.Redis, logger: LoggerInstance): Router {
   const router = Router();
   // redirection
-  router.get('/', (req: Request, res: Response) => {
-    res.redirect('/index.html');
-  });
+  router.get('/', (req: Request, res: Response) => res.redirect('/index.html'));
+  router.get('/working', (req, res) => res.json({ success: true }));
 
   // Handle 404
   router.use((req: Request, res: Response, next: NextFunction) => {
