@@ -5,28 +5,27 @@ import RedisMock from 'ioredis-mock';
 // connection
 const options: Redis.RedisOptions =
   process.env.NODE_ENV === 'production'
-    ? { host: process.env.REDIS_URL, db: 0, showFriendlyErrorStack: false }
+    ? process.env.REDIS_URL
     : {
       data: {
         'admin:user': {
           login: 'admin',
-          password: 'password'
+          password: 'password',
+          lastConnectionDate: ''
         },
-        user_next: '3',
-        emails: {
-          'clark@daily.planet': '1',
-          'bruce@wayne.enterprises': '2'
+        'admin:config': {
+          sessionExpirationDelay: 0,
+          switchToUnavailableDelay: 15,
         },
-        'user:1': {
-          id: '1',
-          username: 'superman',
-          email: 'clark@daily.planet'
+        'user:id': 1003,
+        'company:id': 1,
+        userById: {
+          'user:1000': `{mail:'huhu.hihi@gmail.com'}`,
+          'user:1001': `{mail:'haha@hoho>fr'}`,
         },
-        'user:2': {
-          id: '2',
-          username: 'batman',
-          email: 'bruce@wayne.enterprises'
-        }
+        companyById: {
+          'company:0': `{name:'comp0'}`
+        },
       }
     };
 
