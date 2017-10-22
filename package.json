@@ -11,7 +11,7 @@
     "dev:api": "nodemon --exec \"babel-node\" --watch src/ ./src/server.js",
     "dev": "nf start devapi devui",
     "test": "node test.js",
-    "postinstall": "babel src/ -d build/",
+    "postinstall": "node postinstall.js && babel src/ -d build/",
     "start": "nf start web"
   },
   "dependencies": {
@@ -21,13 +21,19 @@
     "babel-preset-env": "^1.6.0",
     "babel-preset-flow": "^6.23.0",
     "babel-runtime": "^6.26.0",
+    "body-parser": "1.18.2",
     "express": "4.15.2",
     "foreman": "2.0.0",
-    "fs-nextra": "^0.3.2",
+    "helmet": "3.9.0",
     "ioredis": "^3.1.4",
     "ioredis-mock": "3.1.1",
+    "mkdirp-promise": "5.0.1",
+    "morgan": "1.9.0",
+    "passport": "0.4.0",
     "ramda": "0.25.0",
-    "socket.io": "^2.0.3"
+    "socket.io": "^2.0.3",
+    "winston": "2.4.0",
+    "winston-daily-rotate-file": "1.7.2"
   },
   "devDependencies": {
     "babel-eslint": "^8.0.1",

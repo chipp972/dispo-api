@@ -1,46 +1,63 @@
+// @flow
 import http from 'http';
-import express from 'express';
-import io from 'socket.io';
+// import https from 'https';
+import initApp from './app/app';
+import initRedis from './database/redis';
+import initWebsocket from './websocket';
+import createLogger from './logger';
+import env from './env';
 
-import { adminListeners } from './action';
-import redis from './database/redis';
+(async () => {
+  const logger = createLogger(env.log.file.server);
+  const database = await initRedis();
+  const app = initApp(database, logger);
 
-const logger = console;
+  app.set('env', env.nodeEnv);
+  const server = http.createServer(app).listen(env.port.http);
+  // const httpsServer = https.createServer(app).listen(env.port.https);
 
-// Express app
-const app = express();
-app.set('port', process.env.PORT || 5000);
-app.use(express.static(`${__dirname}/../public`));
+  // Handle server errors
+  server.on('error', (err: Error) => {
+    if (err.syscall !== 'listen') {
+      logger.error(err.message);
+      throw err;
+    }
 
-// redirection
-app.get('/', (request, response) => {
-  response.redirect('/index.html');
-});
+    const bind = `Port ${env.port.http}`;
 
-const cleanExit = () => {
-  logger.info('Server is down');
-  if (process.env.NODE_ENV === 'production') {
-    redis.quit().then(() => process.exit(0));
-  }
-};
-
-process.once('SIGINT', cleanExit);
-process.once('SIGTERM', cleanExit);
-
-// HTTP server
-const server = http.Server(app);
-server.listen(app.get('port'), () => {
-  console.log('Node app is running on port', app.get('port'));
-});
-
-// Web socket
-const ws = io(server);
-ws.on('connection', (socket) => {
-  socket.broadcast.emit('news', { hello: 'world' });
-
-  socket.on('ping', (data) => {
-    socket.emit('pong', data);
+    // $FlowFixMe
+    switch (err.code) {
+      case 'EACCES':
+        logger.error(`${bind} requires elevated privileges`);
+        process.exit(1);
+        break;
+      case 'EADDRINUSE':
+        logger.error(`${bind} is already in use`);
+        process.exit(1);
+        break;
+      default:
+        logger.error(err.message);
+        throw err;
+    }
   });
 
-  adminListeners(socket, redis);
-});
+  const cleanExit = () => {
+    logger.log('info', 'Server is down');
+    if (env.nodeEnv === 'production') {
+      database.quit().then(() => process.exit(0));
+    }
+  };
+
+  process.once('SIGINT', cleanExit);
+  process.once('SIGTERM', cleanExit);
+
+
+  server.on('listening', () => {
+    const addr = server.address();
+    const bind =
+      typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
+    logger.info(`Server Listening on ${bind}`);
+  });
+
+  initWebsocket(server, database);
+})();
