@@ -2,7 +2,8 @@
 
 export default {
   port: {
-    http: process.env.HTTP_PORT || 5000,
+    default: process.env.PORT || 5000,
+    http: process.env.HTTP || 80,
     https: process.env.HTTPS_PORT || 443
   },
   nodeEnv: process.env.NODE_ENV || 'development',

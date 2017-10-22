@@ -13,7 +13,7 @@ import env from './env';
   const app = initApp(database, logger);
 
   app.set('env', env.nodeEnv);
-  const server = http.createServer(app).listen(env.port.http);
+  const server = http.createServer(app).listen(env.port.default);
   // const httpsServer = https.createServer(app).listen(env.port.https);
 
   // Handle server errors
@@ -23,7 +23,7 @@ import env from './env';
       throw err;
     }
 
-    const bind = `Port ${env.port.http}`;
+    const bind = `Port ${env.port.default}`;
 
     // $FlowFixMe
     switch (err.code) {
