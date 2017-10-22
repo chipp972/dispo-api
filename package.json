@@ -11,7 +11,7 @@
     "dev:api": "nodemon --exec \"babel-node\" --watch src/ ./src/server.js",
     "dev": "nf start devapi devui",
     "test": "node test.js",
-    "prestart": "babel src/ -d build/",
+    "postinstall": "babel src/ -d build/",
     "start": "nf start web"
   },
   "dependencies": {
