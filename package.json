@@ -3,16 +3,16 @@
   "version": "0.0.1",
   "description": "Back-end API for dispo app",
   "engines": {
-    "node": "8.6.0"
+    "node": "8.7.0"
   },
   "main": "index.js",
   "scripts": {
-    "build:ui": "cd ./ui && yarn && yarn build",
-    "dev:ui": "cd ./ui && yarn && yarn start",
-    "dev": "concurrently --kill-others \"npm run dev:ui\" \"nodemon --exec \"babel-node\" --watch src/ ./src/server.js\"",
+    "dev:ui": "cd ./ui && yarn start",
+    "dev:api": "nodemon --exec \"babel-node\" --watch src/ ./src/server.js",
+    "dev": "nf start devapi devui",
+    "test": "node test.js",
     "prestart": "babel src/ -d build/",
-    "start": "node build/server.js",
-    "test": "node test.js"
+    "start": "nf start web"
   },
   "dependencies": {
     "babel-cli": "^6.26.0",
@@ -22,12 +22,22 @@
     "babel-preset-flow": "^6.23.0",
     "babel-runtime": "^6.26.0",
     "express": "4.15.2",
+    "foreman": "2.0.0",
     "fs-nextra": "^0.3.2",
     "ioredis": "^3.1.4",
+    "ioredis-mock": "3.1.1",
+    "ramda": "0.25.0",
     "socket.io": "^2.0.3"
   },
   "devDependencies": {
+    "babel-eslint": "^8.0.1",
     "concurrently": "^3.5.0",
+    "eslint": "^4.9.0",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-plugin-flowtype": "^2.39.1",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-jsx-a11y": "^6.0.2",
+    "eslint-plugin-react": "^7.4.0",
     "flow-bin": "^0.56.0",
     "mocha": "^4.0.1",
     "nodemon": "^1.12.1",
