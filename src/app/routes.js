@@ -13,6 +13,7 @@ export default function initRoutes(database: Redis.Redis, logger: LoggerInstance
   router.use((req: Request, res: Response, next: NextFunction) => {
     logger.log('info', 'app', '404 not found');
     const err = new Error('Not found');
+    // $FlowFixMe
     err.status = 404;
     next(err);
   });

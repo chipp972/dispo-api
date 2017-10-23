@@ -16,7 +16,8 @@ export default function initRedis(): Redis.Redis {
       : new RedisMock(redisMockObject);
 
   // error handling
-  redis.on('error', (err: Redis.ReplyError) => logger.log('error', 'redis', err));
+  redis.on('error', (err: Redis.ReplyError) =>
+    logger.log('error', 'redis', err));
 
   // init admin user and conf
   redis.once('ready', () => {

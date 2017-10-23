@@ -4,7 +4,7 @@ import './App.css';
 import AdminScreen from './AdminScreen'
 import io from 'socket.io-client';
 
-const socket = io('http://localhost:5000');
+const socket = io('ws://dispo-api.herokuapp.com/');
 
 export default class App extends Component {
   render() {

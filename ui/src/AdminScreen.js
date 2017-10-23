@@ -18,11 +18,13 @@ export default class AdminScreen extends Component {
       newConf: ''
     };
 
-    this.props.socket.on('ADMIN_CONFIG_UPDATE', conf =>
-      this.setState({ unavailableSwitchingDelay: conf })
-    );
+    this.props.socket.on('news', text => console.log(text))
 
-    this.props.socket.emit('GET_ADMIN_CONFIG');
+    // this.props.socket.on('ADMIN_CONFIG_UPDATE', conf =>
+    //   this.setState({ unavailableSwitchingDelay: conf })
+    // );
+
+    this.props.socket.on('ADMIN_CONFIG_UPDATE', text => console.log(text));
 
     this.handleConfChange = this.handleConfChange.bind(this);
   }
@@ -44,7 +46,7 @@ export default class AdminScreen extends Component {
 
         <ListGroup type="select">
           {this.state.jobList.map(job => (
-            <ListGroupItem className="justify-content-between">
+            <ListGroupItem key={job} className="justify-content-between">
               {job + ' '}
               <Button color="info">Modifier</Button>{' '}
               <Button color="danger">Supprimer</Button>

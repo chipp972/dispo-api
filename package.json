@@ -25,7 +25,7 @@
     "express": "4.15.2",
     "foreman": "2.0.0",
     "helmet": "3.9.0",
-    "ioredis": "^3.1.4",
+    "ioredis": "3.1.4",
     "ioredis-mock": "3.1.1",
     "mkdirp-promise": "5.0.1",
     "morgan": "1.9.0",
