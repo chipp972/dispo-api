@@ -1,5 +1,5 @@
 // @flow
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import bodyParser from 'body-parser';
@@ -7,7 +7,7 @@ import bodyParser from 'body-parser';
 import Redis from 'ioredis';
 import { LoggerInstance } from 'winston';
 
-import env from '../env';
+import env from '../config/env';
 import initRoutes from './routes';
 // import { configurePassport } from './auth';
 
@@ -32,6 +32,7 @@ export default function initApp(
     // authentication
     // app.use(passport.initialize());
     // configurePassport(database, passport);
+    // initAuthentication(app, database, passport)
 
     // logs
     if (env.nodeEnv === 'development') app.use(morgan('dev'));
@@ -45,6 +46,15 @@ export default function initApp(
     app.use(express.static(`${__dirname}/../public`));
     app.use(initRoutes(database, logger));
 
+    /* Handle 404 */
+    app.use((req: Request, res: Response, next: NextFunction) => {
+      logger.log('info', 'app', '404 not found');
+      const err = new Error('Not found');
+      // $FlowFixMe
+      err.status = 404;
+      next(err);
+    });
+
     /* error handlers */
     app.use((err, req, res, next) => { // eslint-disable-line
       const stack = env.nodeEnv === 'development' ? err.stack : '';
@@ -57,7 +67,7 @@ export default function initApp(
 
     return app;
   } catch (err) {
-    logger.log('error', 'app initialisation', err);
+    logger.log('error', 'app', err);
     throw err;
   }
 }

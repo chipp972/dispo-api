@@ -3,12 +3,11 @@ import io from 'socket.io';
 import Redis from 'ioredis';
 import { Server } from 'http';
 
-import adminChannel from './channels/admin';
-import createLogger from './logger';
-import env from './env';
+import adminChannel from './admin/admin.ws';
+import getLogger from './logger';
 
 export default function initWebsocket(server: Server, database: Redis.Redis) {
-  const logger = createLogger(env.log.file.websocket);
+  const logger = getLogger();
   const ws = io(server);
 
   ws.on('connection', (socket) => {

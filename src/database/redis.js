@@ -1,46 +1,48 @@
 // @flow
 import Redis from 'ioredis';
+import { LoggerInstance } from 'winston';
 import RedisMock from 'ioredis-mock';
 import redisMockObject from './mock';
-import createLogger from '../logger';
-import env from '../env';
+import env from '../config/env';
 
-export default function initRedis(): Redis.Redis {
-  // logger
-  const logger = createLogger(env.log.file.database);
-
+export default async function initRedis(logger: LoggerInstance): Promise<Redis.Redis> {
   // connection
   const redis: Redis.Redis =
-    process.env.NODE_ENV === 'production'
+    env.nodeEnv === 'production'
       ? new Redis(process.env.REDIS_URL)
-      : new RedisMock(redisMockObject);
-
-  // error handling
-  redis.on('error', (err: Redis.ReplyError) =>
-    logger.log('error', 'redis', err));
-
-  // init admin user and conf
-  redis.once('ready', () => {
-    logger.log('info', 'redis', 'ready');
-    redis
-      .hmget('admin:user', 'login', 'password')
-      .then((res: Redis.ResCallbackT) => {
-        if (res.filter(value => value !== null).length < 2) {
-          redis
-            .hmset(
-              'admin:user',
-              'login',
-              process.env.DEFAULT_ADMIN_LOGIN,
-              'password',
-              process.env.DEFAULT_ADMIN_PASSWORD
-            )
-            .then((res2: Redis.ResCallbackT) =>
-              logger.log('info', `admin user creation: ${res2}`));
-        } else {
-          logger.log('info', 'admin user already exists');
-        }
+      : new Redis(env.database.url, {
+        retryStrategy: () => false
       });
-  });
 
-  return redis;
+  return new Promise((resolve, reject) => {
+    // error handling
+    redis.on('error', (err: Redis.ReplyError) => {
+      if (env.nodeEnv === 'production') reject(err);
+      logger.log('info', 'using redis mock');
+      resolve(new RedisMock(redisMockObject));
+    });
+
+    // init admin user and conf
+    redis.once('ready', async () => {
+      logger.log('info', 'redis', 'ready');
+      const res: Redis.ResCallbackT = await redis.hmget(
+        'admin:user',
+        'login',
+        'password'
+      );
+      if (res.filter(value => value !== null).length < 2) {
+        const res2: Redis.ResCallbackT = await redis.hmset(
+          'admin:user',
+          'login',
+          process.env.DEFAULT_ADMIN_LOGIN,
+          'password',
+          process.env.DEFAULT_ADMIN_PASSWORD
+        );
+        logger.log('info', `admin user creation: ${res2}`);
+      } else {
+        logger.log('info', 'admin user already exists');
+      }
+      resolve(redis);
+    });
+  });
 }
