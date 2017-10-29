@@ -1,0 +1,4 @@
+
+const keys = {
+  companyByName: 'companyByName'
+};
