@@ -5,11 +5,11 @@ import { Server } from 'http';
 import { LoggerInstance } from 'winston';
 
 // import adminChannelConfig from './admin/admin.ws';
-import userChannelConfig from './user/user.ws';
+import initUserChannel from './user/user.ws';
 // import companyChannelConfig from './company/company.ws';
 
 /**
- * function to init channel listeners on actions
+ * Initialize channel listeners for each actions defined in a channel config
  */
 function initChannel(
   socket: SocketIO.Socket,
@@ -19,28 +19,39 @@ function initChannel(
 ): void {
   try {
     socket.join(channelConfig.channelName);
-    Object.keys(channelConfig.actions).forEach((key) => {
-      socket.on(key, channelConfig.actions[key]);
+    Object.keys(channelConfig.actions).forEach((action: string) => {
+      socket.on(action, channelConfig.actions[action]);
     });
   } catch (err) {
-    throw new Error(`initChannel: ${err}`);
+    throw new Error(`initChannel ${channelConfig.channelName}: ${err}`);
   }
 }
 
+/**
+ * Initialize an array of channels
+ */
 function initChannels(
   socket: SocketIO.Socket,
   database: Redis.Redis,
   logger: LoggerInstance,
-  channelConfigs: ChannelConfig[],
+  channelConfigFactories: ChannelConfigFactory[]
 ): void {
-  channelConfigs.forEach((channelConfig: ChannelConfig) =>
-    initChannel(socket, database, logger, channelConfig));
+  channelConfigFactories
+    .map((channelConfigFactory: ChannelConfigFactory) =>
+      channelConfigFactory(socket, database))
+    .forEach((channelConfig: ChannelConfig) =>
+      initChannel(
+        socket,
+        database,
+        logger,
+        channelConfig
+      ));
 }
 
 export default function initWebsocket(
   server: Server,
   database: Redis.Redis,
-  logger: LoggerInstance,
+  logger: LoggerInstance
 ): void {
   const ws: SocketIO.Server = io(server);
 
@@ -49,8 +60,8 @@ export default function initWebsocket(
 
     // channels
     initChannels(ws, database, logger, [
+      initUserChannel
       // adminChannelConfig,
-      userChannelConfig,
       // companyChannelConfig
     ]);
 

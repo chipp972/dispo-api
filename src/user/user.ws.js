@@ -8,7 +8,13 @@ const event = {
   update: 'userUdpate'
 };
 
-const initUserChannel = (socket: SocketIO.Socket, databaseInstance: any) => ({
+/**
+ * Create an object to handle websocket interactions
+ */
+const initUserChannel = (
+  socket: SocketIO.Socket,
+  databaseInstance: any
+): ChannelConfig => ({
   channelName,
   actions: {
     getAll: async (): Promise<void> => {
