@@ -2,7 +2,9 @@
 
 export default {
   database: {
-    url: process.env.REDIS_URL || 'redis://127.0.0.1:6379/'
+    redisUrl: process.env.REDIS_URL || 'redis://127.0.0.1:6379/',
+    mongodbUri: process.env.MONGO_URI || 'mongodb://localhost/test',
+    mongoPoolSize: process.env.MONGO_POOL_SIZE || 5
   },
   port: {
     default: process.env.PORT || 5000,

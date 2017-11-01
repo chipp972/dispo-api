@@ -1,8 +1,8 @@
 // @flow
 import Redis from 'ioredis';
-import { LoggerInstance } from 'winston';
 import RedisMock from 'ioredis-mock';
-import redisMockObject from './mock';
+import { LoggerInstance } from 'winston';
+import redisMockObject from './redis.mock';
 import env from '../config/env';
 
 export default async function initRedis(logger: LoggerInstance): Promise<Redis.Redis> {
@@ -10,7 +10,7 @@ export default async function initRedis(logger: LoggerInstance): Promise<Redis.R
   const redis: Redis.Redis =
     env.nodeEnv === 'production'
       ? new Redis(process.env.REDIS_URL)
-      : new Redis(env.database.url, {
+      : new Redis(env.database.redisUrl, {
         retryStrategy: () => false
       });
 

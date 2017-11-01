@@ -1,30 +1,34 @@
 // @flow
 import Redis from 'ioredis';
-import { LoggerInstance } from 'winston';
+import type { AdminConfig } from './admin.type';
 
-const keys = {
+const redisKeys = {
   user: 'admin:user',
   config: 'admin:config'
 };
 
-export async function getAdminConfig(redis: Redis.Redis, logger: LoggerInstance) {
+/**
+ * Retrieve the admin config
+ */
+export async function getAdminConfig(redis: Redis.Redis): Promise<AdminConfig> {
   try {
-    const adminConfig = await redis.hgetall(keys.config);
+    const adminConfig = await redis.hgetall(redisKeys.config);
     // TODO: check type
     return adminConfig;
   } catch (err) {
-    logger.log('error', 'getAdminConfig', err);
-    throw err;
+    throw new Error(`getAdminConfig: ${err}`);
   }
 }
 
-export async function setAdminConfig(redis: Redis.Redis, logger: LoggerInstance) {
+/**
+ * Set admin config in mongo database and redis database
+ */
+export async function setAdminConfig(redis: Redis.Redis): Promise<AdminConfig> {
   try {
     // TODO: todo set
-    const adminConfig = await redis.hmget(keys.config);
+    const adminConfig = await redis.hmget(redisKeys.config);
     return adminConfig;
   } catch (err) {
-    logger.log('error', 'getAdminConfig', err);
-    throw err;
+    throw new Error(`setAdminConfig: ${err}`);
   }
 }

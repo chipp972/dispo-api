@@ -5,7 +5,7 @@ export type AdminUser = {
   lastConnectionDate: Date
 }
 
-export type Config = {
+export type AdminConfig = {
   sessionExpirationDelay: number,
   switchToUnavailableDelay: number
 }
