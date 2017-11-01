@@ -10,8 +10,8 @@
     "dev:ui": "cd ./ui && yarn start",
     "dev:api": "nodemon --exec \"babel-node\" --watch src/ ./src/server.js",
     "dev": "nf start devapi devui",
-    "test": "node test.js",
-    "postinstall": "node postinstall.js && babel src/ -d build/",
+    "test": "tape-watch -r babel-register \"src/**/__tests__/*\"",
+    "postinstall": "babel src/ -d build/",
     "start": "nf start web"
   },
   "dependencies": {
@@ -22,22 +22,26 @@
     "babel-preset-flow": "^6.23.0",
     "babel-runtime": "^6.26.0",
     "body-parser": "1.18.2",
+    "connect-ensure-login": "0.1.1",
     "express": "4.15.2",
     "foreman": "2.0.0",
     "helmet": "3.9.0",
     "ioredis": "3.1.4",
     "ioredis-mock": "3.1.1",
-    "mkdirp-promise": "5.0.1",
+    "mongoose": "4.12.5",
+    "mockgoose": "7.3.3",
     "morgan": "1.9.0",
     "opbeat": "4.16.0",
     "passport": "0.4.0",
+    "passport-auth0": "0.6.0",
     "ramda": "0.25.0",
     "socket.io": "^2.0.3",
     "winston": "2.4.0"
   },
   "devDependencies": {
     "babel-eslint": "^8.0.1",
-    "concurrently": "^3.5.0",
+    "babel-plugin-transform-object-rest-spread": "6.26.0",
+    "babel-register": "6.26.0",
     "eslint": "^4.9.0",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-plugin-flowtype": "^2.39.1",
@@ -45,11 +49,11 @@
     "eslint-plugin-jsx-a11y": "^6.0.2",
     "eslint-plugin-react": "^7.4.0",
     "flow-bin": "^0.56.0",
-    "mocha": "^4.0.1",
     "nodemon": "^1.12.1",
     "prettier": "^1.7.4",
     "request": "^2.81.0",
-    "tape": "^4.7.0"
+    "tape": "^4.7.0",
+    "tape-watch": "2.3.0"
   },
   "repository": {
     "type": "git",

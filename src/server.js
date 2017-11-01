@@ -60,7 +60,7 @@ import env from './config/env';
       logger.info(`Server Listening on ${bind}`);
     });
 
-    initWebsocket(server, database);
+    initWebsocket(server, database, logger);
   } catch (err) {
     logger.log('error', err);
     throw err;
