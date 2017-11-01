@@ -52,11 +52,10 @@ import env from './config/env';
     process.once('SIGINT', cleanExit);
     process.once('SIGTERM', cleanExit);
 
-
     server.on('listening', () => {
       const addr = server.address();
       const bind =
-      typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
+        typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
       logger.info(`Server Listening on ${bind}`);
     });
 

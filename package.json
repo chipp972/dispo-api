@@ -17,6 +17,7 @@
   "dependencies": {
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
+    "babel-plugin-transform-object-rest-spread": "6.26.0",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.0",
     "babel-preset-flow": "^6.23.0",
@@ -31,7 +32,6 @@
     "mongoose": "4.12.5",
     "mockgoose": "7.3.3",
     "morgan": "1.9.0",
-    "opbeat": "4.16.0",
     "passport": "0.4.0",
     "passport-auth0": "0.6.0",
     "ramda": "0.25.0",
@@ -40,7 +40,6 @@
   },
   "devDependencies": {
     "babel-eslint": "^8.0.1",
-    "babel-plugin-transform-object-rest-spread": "6.26.0",
     "babel-register": "6.26.0",
     "eslint": "^4.9.0",
     "eslint-config-airbnb": "^16.1.0",
