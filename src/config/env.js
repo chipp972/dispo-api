@@ -20,6 +20,9 @@ export default {
       websocket: process.env.LOGFILE_WEBSOCKET || 'websocket'
     }
   },
+  queue: {
+    concurrency: process.env.QUEUE_CONCURRENCY || 1
+  },
   defaultAdminLogin: process.env.DEFAULT_ADMIN_LOGIN || 'admin',
   defaultAdminPassword: process.env.DEFAULT_ADMIN_PASSWORD || 'password123'
 };

@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import AdminScreen from './AdminScreen'
+import AdminScreen from './AdminScreen';
 import io from 'socket.io-client';
 
-const socket = io('wss://dispo-api.herokuapp.com/');
+// const socket = io('ws://dispo-api.herokuapp.com/');
+const socket = io('ws://localhost:5000');
+
 
 export default class App extends Component {
   render() {

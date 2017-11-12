@@ -15,9 +15,11 @@
   "extends": ["airbnb", "plugin:flowtype/recommended", "plugin:react/recommended" ],
   "plugins": ["react", "jsx-a11y", "import", "flowtype"],
   "rules": {
+    "react/jsx-boolean-value": "off",
     "react/jsx-filename-extension": "off",
     "comma-dangle": "off",
-    "quotes": "off"
+    "quotes": "off",
+    "no-underscore-dangle": "off"
   },
   "settings": {
     "react": {
