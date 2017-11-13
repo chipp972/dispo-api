@@ -3,7 +3,7 @@
 export default {
   database: {
     redisUrl: process.env.REDIS_URL || 'redis://127.0.0.1:6379/',
-    mongodbUri: process.env.MONGO_URI || 'mongodb://localhost/test',
+    mongodbUri: process.env.MONGODB_URI || 'mongodb://localhost/test',
     mongoPoolSize: process.env.MONGO_POOL_SIZE || 5
   },
   port: {
