@@ -16,10 +16,10 @@ const createCompany = () =>
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      name: 'company03',
+      name: 'company01',
       imageUrl:
         'https://assets-cdn.github.com/images/modules/open_graph/github-mark.png',
-      siret: '1234567o901234',
+      siret: '1234561o901234',
       address: '6 rue du havre 75009 Paris',
       phoneNumber: '0698310966'
     })

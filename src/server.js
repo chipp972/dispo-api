@@ -1,29 +1,47 @@
 // @flow
 import http from 'http';
 // import https from 'https';
+import { Router } from 'express';
 import { LoggerInstance } from 'winston';
+import { Model } from 'mongoose';
 
 import initApp from './config/app';
 import initRedis from './config/database/redis';
 import initMongo from './config/database/mongodb';
 import initWebsocket from './config/websocket';
-
-// express routes
-import initCompanyRoutes from './api/company/company.route';
-// import initCompanyTypeRoutes from './api/company/companytype.route';
-
-// mongoose models
-import { getCompanyModel } from './api/company/company.mongo';
-import { getCompanyTypeModel } from './api/companytype/companytype.mongo';
-
-// channels
-// import { initAdminChannel } from './api/admin/admin.ws';
-// import { initUserChannel } from './api/user/user.ws';
-import { initCompanyChannel } from './api/company/company.ws';
-
-// other config
 import getLogger from './config/logger';
 import env from './config/env';
+
+// admin
+// import type { Admin } from './api/admin/admin.type';
+// import { getAdminModel } from './api/admin/admin.mongo';
+// import { initAdminRoutes } from './api/admin/admin.route';
+// import { initAdminChannel } from './api/admin/admin.ws';
+
+// company
+import type { Company } from './api/company/company.type';
+import { getCompanyModel } from './api/company/company.mongo';
+import { initCompanyRoutes } from './api/company/company.route';
+import { initCompanyChannel } from './api/company/company.ws';
+
+// company types
+import type { CompanyType } from './api/companytype/companytype.type';
+import { getCompanyTypeModel } from './api/companytype/companytype.mongo';
+import { initCompanyTypeRoutes } from './api/companytype/companytype.route';
+// import { initCompanyTypeChannel } from './api/companytype/companytype.ws';
+
+// user
+import type { User } from './api/user/user.type';
+import { getUserModel } from './api/user/user.mongo';
+import { initUserRoutes } from './api/user/user.route';
+// import { initUserChannel } from './api/user/user.ws';
+
+export type MongooseModels = {
+  Company: Model<Company>,
+  CompanyType: Model<CompanyType>,
+  User: Model<User>,
+  // Admin: Model<Admin>
+}
 
 /**
  * Handle server errors
@@ -62,14 +80,14 @@ function handleError(server: http.Server, logger: LoggerInstance) {
 
     const models: MongooseModels = {
       Company: getCompanyModel(mongodb),
-      CompanyType: getCompanyTypeModel(mongodb)
+      CompanyType: getCompanyTypeModel(mongodb),
+      User: getUserModel(mongodb)
     };
 
-    const routes: ExpressRoute[] = [
-      {
-        path: '/company',
-        router: initCompanyRoutes(models.Company)
-      }
+    const routes: Router[] = [
+      initCompanyRoutes(models.Company),
+      initCompanyTypeRoutes(models.CompanyType),
+      initUserRoutes(models.User)
     ];
 
     const app = initApp(routes);
