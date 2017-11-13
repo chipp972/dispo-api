@@ -1,9 +1,13 @@
 // @flow
-import { Router, Request, Response, NextFunction } from 'express';
+import express, { Router, Request, Response, NextFunction } from 'express';
 import env from '../config/env';
 
 export function initRoutes(routes: Router[]): Router {
   const router = Router();
+
+  if (env.nodeEnv === 'production') {
+    router.use('/ui', express.static(`${__dirname}/../../public`));
+  }
 
   router.get('/working', (req: Request, res: Response) =>
     res.json({ success: true }));
