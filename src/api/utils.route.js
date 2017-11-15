@@ -16,6 +16,19 @@ export const formatResponse = (res: Response, status: number, data: any) =>
  */
 export const generateRoute = (
   operation: CrudOperation,
+  status: number,
+) => async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const data = req.body;
+    const result = await operation(data);
+    return formatResponse(res, status, result);
+  } catch (err) {
+    return next(err);
+  }
+};
+
+export const generateRouteWithId = (
+  operation: CrudOperation,
   status: number
 ) => async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -41,10 +54,10 @@ export const generateCrudRoutes = (operations: CrudOperations<*, *>) => {
     .post(generateRoute(operations.create, 201));
   router
     .route('/:id')
-    .get(generateRoute(operations.getById, 200))
-    .put(generateRoute(operations.edit, 200))
-    .patch(generateRoute(operations.edit, 200))
-    .delete(generateRoute(operations.remove, 200));
+    .get(generateRouteWithId(operations.getById, 200))
+    .put(generateRouteWithId(operations.edit, 200))
+    .patch(generateRouteWithId(operations.edit, 200))
+    .delete(generateRouteWithId(operations.remove, 200));
 
   return router;
 };

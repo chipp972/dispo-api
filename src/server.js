@@ -3,7 +3,6 @@ import http from 'http';
 // import https from 'https';
 import { Router } from 'express';
 import { LoggerInstance } from 'winston';
-import { Model } from 'mongoose';
 
 import initApp from './config/app';
 import initRedis from './config/database/redis';
@@ -19,29 +18,19 @@ import env from './config/env';
 // import { initAdminChannel } from './api/admin/admin.ws';
 
 // company
-import type { Company } from './api/company/company.type';
 import { getCompanyModel } from './api/company/company.mongo';
 import { initCompanyRoutes } from './api/company/company.route';
 import { initCompanyChannel } from './api/company/company.ws';
 
 // company types
-import type { CompanyType } from './api/companytype/companytype.type';
 import { getCompanyTypeModel } from './api/companytype/companytype.mongo';
 import { initCompanyTypeRoutes } from './api/companytype/companytype.route';
 // import { initCompanyTypeChannel } from './api/companytype/companytype.ws';
 
 // user
-import type { User } from './api/user/user.type';
 import { getUserModel } from './api/user/user.mongo';
 import { initUserRoutes } from './api/user/user.route';
 // import { initUserChannel } from './api/user/user.ws';
-
-export type MongooseModels = {
-  Company: Model<Company>,
-  CompanyType: Model<CompanyType>,
-  User: Model<User>,
-  // Admin: Model<Admin>
-}
 
 /**
  * Handle server errors
@@ -75,21 +64,23 @@ function handleError(server: http.Server, logger: LoggerInstance) {
 (async () => {
   const logger = getLogger();
   try {
+    // db connections
     const redis = await initRedis(logger);
     const mongodb = await initMongo(logger);
 
-    const models: MongooseModels = {
-      Company: getCompanyModel(mongodb),
-      CompanyType: getCompanyTypeModel(mongodb),
-      User: getUserModel(mongodb)
-    };
+    // mongoose models
+    const CompanyTypeModel = getCompanyTypeModel(mongodb);
+    const UserModel = getUserModel(mongodb);
+    const CompanyModel = getCompanyModel(mongodb, UserModel, CompanyTypeModel);
 
+    // express routes
     const routes: Router[] = [
-      initCompanyRoutes(models.Company),
-      initCompanyTypeRoutes(models.CompanyType),
-      initUserRoutes(models.User)
+      initCompanyRoutes(CompanyModel),
+      initCompanyTypeRoutes(CompanyTypeModel),
+      initUserRoutes(UserModel)
     ];
 
+    // express app
     const app = initApp(routes);
     app.set('env', env.nodeEnv);
     const server = http.createServer(app).listen(env.port.default);

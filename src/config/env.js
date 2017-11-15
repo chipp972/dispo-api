@@ -23,6 +23,12 @@ export default {
   queue: {
     concurrency: process.env.QUEUE_CONCURRENCY || 1
   },
+  google: {
+    apiKey: process.env.GOOGLE_API_KEY,
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET
+  },
   defaultAdminLogin: process.env.DEFAULT_ADMIN_LOGIN || 'admin',
-  defaultAdminPassword: process.env.DEFAULT_ADMIN_PASSWORD || 'password123'
+  defaultAdminPassword: process.env.DEFAULT_ADMIN_PASSWORD || 'password123',
+  sessionExpiration: process.env.SESSION_EXPIRATION || 86400
 };

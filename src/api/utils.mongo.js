@@ -16,9 +16,12 @@ export type CrudOperations<ModelT, DataT> = {
  */
 type MongooseCrudGenerator<T, T2> = (model: Model<T>) => CrudOperations<T, T2>;
 
-export const generateCrudOperations: MongooseCrudGenerator<*, *> = <ModelT, DataT>(
-  model
-): CrudOperations<ModelT, DataT> => ({
+export const generateCrudOperations: MongooseCrudGenerator<*, *> = <
+  ModelT,
+  DataT
+>(
+    model
+  ): CrudOperations<ModelT, DataT> => ({
   getAll: async (): Promise<ModelT[]> => {
     try {
       const objList = await model.find({});

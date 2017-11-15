@@ -22,26 +22,8 @@ export default async function initRedis(logger: LoggerInstance): Promise<Redis.R
       resolve(new RedisMock(redisMockObject));
     });
 
-    // init admin user and conf
+    // init redis store
     redis.once('ready', async () => {
-      logger.log('info', 'redis', 'ready');
-      const res: Redis.ResCallbackT = await redis.hmget(
-        'admin:user',
-        'login',
-        'password'
-      );
-      if (res.filter(value => value !== null).length < 2) {
-        const res2: Redis.ResCallbackT = await redis.hmset(
-          'admin:user',
-          'login',
-          process.env.DEFAULT_ADMIN_LOGIN,
-          'password',
-          process.env.DEFAULT_ADMIN_PASSWORD
-        );
-        logger.log('info', `admin user creation: ${res2}`);
-      } else {
-        logger.log('info', 'admin user already exists');
-      }
       resolve(redis);
     });
   });
