@@ -46,7 +46,7 @@ export const getCompanyModel = (
   });
 
   const CompanySchema = new Schema({
-    // owner: { type: Schema.Types.ObjectId, ref: 'User' },
+    owner: { type: Schema.Types.ObjectId, ref: 'User' },
     // manager: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     name: {
       type: String,

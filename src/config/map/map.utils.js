@@ -29,7 +29,3 @@ export const mapUtil: MapUtils = {
     })
 };
 
-mapUtil
-  .getGeocode('6 rue du havre 75009 Paris')
-  .then(res => console.log(res))
-  .catch(err => console.log(err));
