@@ -1,23 +1,24 @@
 // @flow
 import express, { Router, Request, Response, NextFunction } from 'express';
+import cors, { CorsOptions } from 'cors';
 import env from '../config/env';
 
 export function initRoutes(routes: Router[]): Router {
   const router = Router();
 
+  const corsOptions: CorsOptions = {
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Accept', 'Authorization'],
+    optionsSuccessStatus: 204
+  };
+
   if (env.nodeEnv === 'production') {
     router.use('/ui', express.static(`${__dirname}/../../public`));
-  } else {
-    // activate CORS for dev
-    router.use((req: Request, res: Response, next: NextFunction) => {
-      res.header('Access-Control-Allow-Origin', '*');
-      res.header(
-        'Access-Control-Allow-Headers',
-        'Origin, X-Requested-With, Content-Type, Accept'
-      );
-      next();
-    });
   }
+
+  // activate cors
+  router.options('*', cors(corsOptions));
+  router.use(cors(corsOptions));
 
   router.get('/working', (req: Request, res: Response) =>
     res.json({ success: true }));
