@@ -2,8 +2,6 @@
 import { createClient } from '@google/maps';
 import env from '../env';
 
-console.log(env.google);
-
 const mapClient = createClient({
   key: env.google.apiKey,
   // clientId: env.google.clientId,

@@ -12,9 +12,7 @@ export function initRoutes(routes: Router[]): Router {
     optionsSuccessStatus: 204
   };
 
-  if (env.nodeEnv === 'production') {
-    router.use('/ui', express.static(`${__dirname}/../../public`));
-  }
+  router.use('/ui', express.static(`${__dirname}/../../public`));
 
   // activate cors
   router.options('*', cors(corsOptions));
