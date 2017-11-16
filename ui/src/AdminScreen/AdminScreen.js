@@ -127,7 +127,7 @@ export default class AdminScreen extends Component {
         <div>
           {this.state.companies.map(company => (
             <div key={company._id}>
-              <img src={company.imageUrl} />
+              <img src={company.imageUrl} alt={company.name} />
               {company.name}
             </div>
           ))}

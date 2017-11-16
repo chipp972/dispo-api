@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import AdminScreen from './AdminScreen';
+import AdminScreen from '../AdminScreen/AdminScreen';
 import io from 'socket.io-client';
 
-// const socket = io('ws://dispo-api.herokuapp.com/');
-const socket = io('ws://localhost:5000');
-
+const url =
+  process.env.NODE_ENV === 'production' ? '/' : process.env.REACT_APP_PROXY;
+const socket = io(url);
 
 export default class App extends Component {
   render() {
