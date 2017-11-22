@@ -73,7 +73,7 @@ export const getCompanyModel = (
 
   // update geocode location
   // eslint-disable-next-line
-  CompanySchema.pre('save', true, async function(next, done) {
+  CompanySchema.pre('save', async function(next) {
     try {
       const geoLocation = await mapUtil.getGeocode(this.address);
       this.geoAddress = geoLocation;
@@ -81,7 +81,7 @@ export const getCompanyModel = (
       if (!user) return next(new Error('owner id is invalid'));
       const companytype = await CompanyTypeModel.findById(this.type);
       if (!companytype) return next(new Error('type id is invalid'));
-      return done();
+      return next();
     } catch (err) {
       return next(err);
     }
@@ -95,7 +95,7 @@ export const getCompanyModel = (
         this.geoAddress = geoLocation;
         return done();
       })
-      .catch(err => next(err));
+      .catch((err) => next(err));
   });
 
   return dbConnection.model('Company', CompanySchema);

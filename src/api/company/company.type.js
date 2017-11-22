@@ -22,7 +22,7 @@ export type ScheduleWeek = {
 }
 
 export interface CompanyData {
-  // owner: string,
+  owner: string,
   // managers: string[],
   name: string,
   type: string,

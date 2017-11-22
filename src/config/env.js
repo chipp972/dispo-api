@@ -1,5 +1,4 @@
 // @flow
-
 export default {
   database: {
     redisUrl: process.env.REDIS_URL || 'redis://127.0.0.1:6379/',
@@ -12,14 +11,6 @@ export default {
     https: process.env.HTTPS_PORT || 443
   },
   nodeEnv: process.env.NODE_ENV || 'development',
-  log: {
-    folder: process.env.LOG_FOLDER || 'logs',
-    file: {
-      server: process.env.LOGFILE_SERVER || 'server',
-      database: process.env.LOGFILE_DATABASE || 'redis',
-      websocket: process.env.LOGFILE_WEBSOCKET || 'websocket'
-    }
-  },
   queue: {
     concurrency: process.env.QUEUE_CONCURRENCY || 1
   },

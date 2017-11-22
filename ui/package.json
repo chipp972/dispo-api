@@ -5,11 +5,12 @@
   "proxy": "http://localhost:5000/",
   "homepage": "/ui/",
   "dependencies": {
-    "bootstrap": "4.0.0-beta",
+    "material-ui": "1.0.0-beta.21",
+    "material-ui-icons": "1.0.0-beta.17",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
-    "react-scripts": "1.0.14",
-    "reactstrap": "^5.0.0-alpha.3",
+    "react-scripts": "1.0.17",
+    "react-swipeable-views": "0.12.10",
     "socket.io-client": "^2.0.3"
   },
   "scripts": {

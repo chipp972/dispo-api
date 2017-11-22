@@ -19,7 +19,7 @@ export const getUserModel = (dbConnection: Connection): Model<User> => {
     lastName: String,
     firstName: String,
     birthDate: Date,
-    telephone: String,
+    phoneNumber: String,
     address: String
   });
 

@@ -1,8 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import '../node_modules/bootstrap/dist/css/bootstrap.css';
-import App from './App/App';
+import App from './components/App/App';
 import registerServiceWorker from './registerServiceWorker';
+import io from 'socket.io-client';
+import env from './env';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(
+  <App socket={io(env.api.websocketUrl)} />,
+  document.getElementById('root')
+);
 registerServiceWorker();
