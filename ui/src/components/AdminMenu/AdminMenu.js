@@ -7,14 +7,30 @@ import FaceIcon from 'material-ui-icons/Face';
 import SwipeableViews from 'react-swipeable-views';
 
 import TabContainer from '../TabContainer/TabContainer';
-import AdminBuisnessTab from './AdminBuisnessTab/AdminBuisnessTab';
+import CompanyForm from './CompanyForm';
 import CompanyTypeForm from './CompanyTypeForm';
 import UserForm from './UserForm';
+import type {
+  Company,
+  CompanyData
+} from '../../../../src/api/company/company.type';
+import type {
+  CompanyType,
+  CompanyTypeData
+} from '../../../../src/api/companytype/companytype.type';
+import type { User, UserData } from '../../../../src/api/user/user.type';
+import type { CrudOperations } from '../../api/api';
 
 type AdminMenuProps = {
-  companyOperations: any,
-  companyTypeOperations: any,
-  userOperations: any
+  companies: Company[],
+  companyTypes: CompanyType[],
+  users: User[],
+  usersRefresh: Function,
+  companiesRefresh: Function,
+  companyTypesRefresh: Function,
+  companyOperations: CrudOperations<CompanyData, Company>,
+  companyTypeOperations: CrudOperations<CompanyTypeData, CompanyType>,
+  userOperations: CrudOperations<UserData, User>
 };
 
 type AdminMenuState = {
@@ -71,7 +87,7 @@ export default class AdminMenu extends React.Component<
             <UserForm {...this.props} />
           </TabContainer>
           <TabContainer dir="ltr">
-            <AdminBuisnessTab {...this.props} />
+            <CompanyForm {...this.props} />
           </TabContainer>
         </SwipeableViews>
       </div>

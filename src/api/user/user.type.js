@@ -4,8 +4,8 @@ export interface UserData {
   password: string,
   lastName?: string,
   firstName?: string,
-  birthDate?: Date,
-  telephone?: string,
+  birthDate?: string,
+  phoneNumber?: string,
   address?: string,
 }
 
