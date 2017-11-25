@@ -8,13 +8,18 @@ import {
   companyOperations,
   companyTypeOperations,
   userOperations,
-  adminLogin,
 } from './api/api';
+import { adminLogin } from './api/auth';
 
 ReactDOM.render(
   <App
     socket={io(env.api.websocketUrl)}
-    {...{companyOperations, companyTypeOperations, userOperations, adminLogin}}
+    {...{
+      companyOperations,
+      companyTypeOperations,
+      userOperations,
+      adminLogin,
+    }}
   />,
   document.getElementById('root')
 );

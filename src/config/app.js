@@ -1,17 +1,26 @@
 // @flow
-import express, { Router } from 'express';
+import express, { Router, Application } from 'express';
+import { Model } from 'mongoose';
 import applyMiddlewares from './middlewares';
 import { initRoutes } from './routes';
 
 /**
- * Initialize the application and the database
+ * Initialize the application
+ * @param {Router[]} routes
+ * @param {Model} UserModel
+ * @param {Model} AdminModel
+ * @return {Application}
  */
-export default function initApp(routes: Router[]): express.Application {
+export default function initApp(
+  routes: Router[],
+  UserModel: Model,
+  AdminModel: Model
+): Application {
   try {
     const app = express();
 
     /* express middlewares */
-    applyMiddlewares(app);
+    applyMiddlewares(app, UserModel, AdminModel);
 
     /* routes */
     app.use(initRoutes(routes));

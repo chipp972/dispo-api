@@ -14,20 +14,20 @@ import type {
   CompanyTypeData
 } from '../../../../src/api/companytype/companytype.type';
 import type { User, UserData } from '../../../../src/api/user/user.type';
-import type { CrudOperations, AdminLogin } from '../../api/api';
+import type { CrudOperations, AdminLogin } from '../../api/api.type';
 
 type AppProps = {
   socket: SocketIO.Socket,
   companyOperations: CrudOperations<CompanyData, Company>,
   companyTypeOperations: CrudOperations<CompanyTypeData, CompanyType>,
   userOperations: CrudOperations<UserData, User>,
-  adminLogin: AdminLogin
+  adminLogin: AdminLogin,
 };
 
 type AppState = {
   companies: Company[],
   companyTypes: CompanyType[],
-  users: User[],
+  users: User[]
 };
 
 export default class App extends React.Component<AppProps, AppState> {
@@ -89,7 +89,7 @@ export default class App extends React.Component<AppProps, AppState> {
             Dispo administration panel
           </Typography>
         </AppBar>
-        <LoginScreen adminLogin={this.props.adminLogin} />
+        <LoginScreen adminLogin={this.props.adminLogin} handleError={(err) => console.log(err)} />
         <AdminScren
           {...this.state}
           {...this.props}

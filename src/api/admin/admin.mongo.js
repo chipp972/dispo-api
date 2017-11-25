@@ -1,9 +1,8 @@
 // @flow
 import { Schema, Model, Connection } from 'mongoose';
-import type { AdminUser, AdminConfig } from './admin.type';
 
-export const getAdminUserModel = (dbConnection: Connection): Model<AdminUser> => {
-  const AdminUserSchema = new Schema({
+export const getAdminModel = (dbConnection: Connection): Model => {
+  const AdminUserSchema: Schema = new Schema({
     email: {
       type: String,
       unique: true,
@@ -11,19 +10,13 @@ export const getAdminUserModel = (dbConnection: Connection): Model<AdminUser> =>
       lowercase: true,
       required: true
     },
-    password: {
+    code: {
       type: String,
       trim: true,
       required: true
     },
-    lastConnectionDate: Date
+    createdAt: { type: Date, default: Date.now() },
+    expireAt: { type: Date, default: undefined }
   });
   return dbConnection.model('AdminUser', AdminUserSchema);
-};
-
-export const getAdminConfigModel = (dbConnection: Connection): Model<AdminConfig> => {
-  const AdminConfigSchema = new Schema({
-    switchToUnavailableDelay: { type: Number, required: true, min: -1 }
-  });
-  return dbConnection.model('AdminConfig', AdminConfigSchema);
 };

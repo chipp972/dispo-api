@@ -1,5 +1,5 @@
 // @flow
-import http from 'http';
+import http, { Server } from 'http';
 // import https from 'https';
 import { Router } from 'express';
 import { LoggerInstance } from 'winston';
@@ -11,11 +11,12 @@ import initWebsocket from './config/websocket';
 import getLogger from './config/logger';
 import env from './config/env';
 
+// auth
+import { initAuthRoutes } from './api/auth/auth.route';
+
 // admin
-// import type { Admin } from './api/admin/admin.type';
-// import { getAdminModel } from './api/admin/admin.mongo';
-// import { initAdminRoutes } from './api/admin/admin.route';
-// import { initAdminChannel } from './api/admin/admin.ws';
+import { getAdminModel } from './api/admin/admin.mongo';
+import { initAdminRoutes } from './api/admin/admin.route';
 
 // company
 import { getCompanyModel } from './api/company/company.mongo';
@@ -25,17 +26,18 @@ import { initCompanyChannel } from './api/company/company.ws';
 // company types
 import { getCompanyTypeModel } from './api/companytype/companytype.mongo';
 import { initCompanyTypeRoutes } from './api/companytype/companytype.route';
-// import { initCompanyTypeChannel } from './api/companytype/companytype.ws';
 
 // user
 import { getUserModel } from './api/user/user.mongo';
 import { initUserRoutes } from './api/user/user.route';
-// import { initUserChannel } from './api/user/user.ws';
 
 /**
  * Handle server errors
+ * @param {Server} server
+ * @param {LoggerInstance} logger
+ * @return {void}
  */
-function handleError(server: http.Server, logger: LoggerInstance) {
+function handleError(server: Server, logger: LoggerInstance) {
   server.on('error', (err: Error) => {
     if (err.syscall !== 'listen') {
       logger.error(err.message);
@@ -69,19 +71,22 @@ function handleError(server: http.Server, logger: LoggerInstance) {
     const mongodb = await initMongo(logger);
 
     // mongoose models
+    const AdminModel = getAdminModel(mongodb);
     const CompanyTypeModel = getCompanyTypeModel(mongodb);
     const UserModel = getUserModel(mongodb);
     const CompanyModel = getCompanyModel(mongodb, UserModel, CompanyTypeModel);
 
     // express routes
     const routes: Router[] = [
-      initCompanyRoutes(CompanyModel),
+      initAuthRoutes(UserModel, AdminModel),
+      initAdminRoutes(AdminModel),
+      initUserRoutes(UserModel),
       initCompanyTypeRoutes(CompanyTypeModel),
-      initUserRoutes(UserModel)
+      initCompanyRoutes(CompanyModel)
     ];
 
     // express app
-    const app = initApp(routes);
+    const app = initApp(routes, UserModel, AdminModel);
     app.set('env', env.nodeEnv);
     const server = http.createServer(app).listen(env.port.default);
     // const httpsServer = https.createServer(app).listen(env.port.https);

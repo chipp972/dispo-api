@@ -1,10 +1,12 @@
 // @flow
-export type AdminUser = {
+export type AdminData = {
   email: string,
-  password: string,
-  lastConnectionDate: Date
 };
 
-export type AdminConfig = {
-  switchToUnavailableDelay: number
+export interface Admin extends AdminData {
+  _id: string,
+  code: string,
+  createAt: Date,
+  expireAt?: Date
 };
+

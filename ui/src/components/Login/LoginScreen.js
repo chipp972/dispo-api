@@ -1,6 +1,6 @@
 // @flow
 import React from 'react';
-import type { AdminLogin } from '../../api/api';
+import type { AdminLogin } from '../../api/api.type';
 import AuthForm from './AuthForm';
 import LoginForm from './LoginForm';
 

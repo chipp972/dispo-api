@@ -4,19 +4,32 @@ import type { CrudOperation, CrudOperations } from './utils.mongo';
 
 /**
  * format a successful response
+ * @param {Response} res
+ * @param {status} status
+ * @param {*} data
+ * @param {boolean} success
+ * @return {void}
  */
-export const formatResponse = (res: Response, status: number, data: any) =>
+export const formatResponse = (
+  res: Response,
+  status: number,
+  data: any,
+  success?: boolean = true
+): void =>
   res
     .status(status)
     .contentType('application/json')
-    .json({ success: true, data });
+    .json({ success, data });
 
 /**
  * generate a typical CRUD route
+ * @param {CrudOperation} operation
+ * @param {number} status
+ * @return {void}
  */
 export const generateRoute = (
   operation: CrudOperation,
-  status: number,
+  status: number
 ) => async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = req.body;
@@ -43,6 +56,8 @@ export const generateRouteWithId = (
 
 /**
  * Create all routes CRUD operations
+ * @param {CrudOperations} operations
+ * @return {Router}
  */
 export const generateCrudRoutes = (operations: CrudOperations<*, *>) => {
   const router = Router();

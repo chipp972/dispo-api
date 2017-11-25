@@ -6,9 +6,14 @@ type PasswordLessStartRes = {
   _id: string
 };
 
+type TokenRes = {
+  tokenId: string,
+  token: string,
+}
+
 export type AdminLogin = {
   sendCode: (email: string) => Promise<PasswordLessStartRes>,
-  authenticate: (username: string, password: string) => Promise<Response>
+  authenticate: (username: string, password: string) => Promise<TokenRes>
 };
 
 export type CrudOperations<Data, Model> = {

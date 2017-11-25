@@ -8,8 +8,8 @@ import type {
   CompanyTypeData
 } from '../../../src/api/companytype/companytype.type';
 import type { User, UserData } from '../../../src/api/user/user.type';
-import type { CrudOperations, AdminLogin } from './api.type';
-import { getAPIData, fetchAuth0 } from './fetch';
+import type { CrudOperations } from './api.type';
+import { getAPIData} from './fetch';
 
 export const generateCrudOperations = <T1, T2>(
   basePath: string
@@ -17,7 +17,7 @@ export const generateCrudOperations = <T1, T2>(
   getAll: (): Promise<T2[]> =>
     getAPIData({
       path: basePath,
-      method: 'GET'
+      method: 'GET',
     }),
   get: (id: string): Promise<T2> =>
     getAPIData({
@@ -53,38 +53,3 @@ export const userOperations: CrudOperations<UserData,
 
 export const companyTypeOperations: CrudOperations<CompanyTypeData,
   CompanyType> = generateCrudOperations('/companytype');
-
-export const adminLogin: AdminLogin = {
-  sendCode: (email) =>
-    fetchAuth0({
-      path: '/passwordless/start',
-      method: 'POST',
-      data: {
-        connection: 'email',
-        send: 'code',
-        email
-      }
-    }),
-  verifyCode: (email, verificationCode) =>
-    fetchAuth0({
-      path: '/passwordless/verify',
-      method: 'POST',
-      data: {
-        connection: 'email',
-        // grant_type: 'password',
-        email,
-        verification_code: verificationCode
-      }
-    }),
-  authenticate: (username, password) =>
-    fetchAuth0({
-      path: '/oauth/ro',
-      method: 'POST',
-      data: {
-        connection: 'email',
-        grant_type: 'jwt-bearer',
-        username,
-        password
-      }
-    })
-};

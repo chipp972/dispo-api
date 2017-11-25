@@ -12,5 +12,6 @@ export function initUserRoutes(UserModel: Model<User>): Router {
   const routes = generateCrudRoutes(operations);
 
   router.use('/user', routes);
+
   return router;
 }
