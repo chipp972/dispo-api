@@ -1,38 +1,19 @@
 // @flow
 import { Document } from 'mongoose';
-
-export type HoursMinutes = {
-  hours: number,
-  minutes: number
-}
-
-export type ScheduleDay = {
-  start: HoursMinutes,
-  end: HoursMinutes
-}
-
-export type ScheduleWeek = {
-  monday: ScheduleDay,
-  tuesday: ScheduleDay,
-  wednesday: ScheduleDay,
-  thursday: ScheduleDay,
-  friday: ScheduleDay,
-  saturday: ScheduleDay,
-  sunday: ScheduleDay
-}
+import type { ScheduleWeek } from '../schedule/schedule.type';
 
 export interface CompanyData {
-  owner: string,
-  // managers: string[],
-  name: string,
-  type: string,
-  siret?: string,
-  imageUrl?: string,
-  address?: string,
-  phoneNumber?: string,
-  schedule?: ScheduleWeek
+  owner: string;
+  name: string;
+  type: string;
+  siret?: string;
+  imageUrl?: string;
+  address: string;
+  phoneNumber?: string;
+  schedule?: ScheduleWeek;
 }
 
 export interface Company extends CompanyData, Document {
-  _id: string
+  _id: string;
+  geoAddress: { lat: number, lng: number };
 }

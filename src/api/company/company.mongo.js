@@ -4,42 +4,13 @@ import { mapUtil } from '../../config/map/map.utils';
 import type { Company } from './company.type';
 import type { CompanyType } from '../companytype/companytype.type';
 import type { User } from '../user/user.type';
+import { WeekSchema } from '../schedule/schedule.mongo';
 
 export const getCompanyModel = (
   dbConnection: Connection,
   UserModel: Model<User>,
   CompanyTypeModel: Model<CompanyType>
 ): Model<Company> => {
-  const HourMinuteSchema = new Schema({
-    hours: {
-      type: Number,
-      default: 0,
-      max: 23,
-      min: 0
-    },
-    minutes: {
-      type: Number,
-      default: 0,
-      max: 59,
-      min: 0
-    }
-  });
-
-  const DaySchema = new Schema({
-    start: HourMinuteSchema,
-    end: HourMinuteSchema
-  });
-
-  const WeekSchema = new Schema({
-    monday: DaySchema,
-    tuesday: DaySchema,
-    wednesday: DaySchema,
-    thursday: DaySchema,
-    friday: DaySchema,
-    saturday: DaySchema,
-    sunday: DaySchema
-  });
-
   const GeocodeSchema = new Schema({
     lat: { type: Number, required: true },
     lng: { type: Number, required: true }
@@ -47,7 +18,6 @@ export const getCompanyModel = (
 
   const CompanySchema = new Schema({
     owner: { type: Schema.Types.ObjectId, ref: 'User' },
-    // manager: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     name: {
       type: String,
       required: true,
@@ -71,32 +41,27 @@ export const getCompanyModel = (
     schedule: WeekSchema
   });
 
-  // update geocode location
   // eslint-disable-next-line
-  CompanySchema.pre('save', async function(next) {
+  const preSaveChecks = async function(next) {
     try {
-      const geoLocation = await mapUtil.getGeocode(this.address);
-      this.geoAddress = geoLocation;
-      const user = await UserModel.findById(this.owner);
+      const company: Company = this || {};
+      // update geocode location
+      const geoLocation = await mapUtil.getGeocode(company.address);
+      company.geoAddress = geoLocation;
+      // check owner
+      const user = await UserModel.findById(company.owner);
       if (!user) return next(new Error('owner id is invalid'));
-      const companytype = await CompanyTypeModel.findById(this.type);
+      // check company type
+      const companytype = await CompanyTypeModel.findById(company.type);
       if (!companytype) return next(new Error('type id is invalid'));
       return next();
     } catch (err) {
       return next(err);
     }
-  });
+  };
 
-  // eslint-disable-next-line
-  CompanySchema.pre('update', true, function(next, done) {
-    mapUtil
-      .getGeocode(this.address)
-      .then((geoLocation) => {
-        this.geoAddress = geoLocation;
-        return done();
-      })
-      .catch((err) => next(err));
-  });
+  CompanySchema.pre('save', preSaveChecks);
+  CompanySchema.pre('update', preSaveChecks);
 
   return dbConnection.model('Company', CompanySchema);
 };
