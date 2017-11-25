@@ -7,13 +7,14 @@ import env from './env';
 import {
   companyOperations,
   companyTypeOperations,
-  userOperations
+  userOperations,
+  adminLogin,
 } from './api/api';
 
 ReactDOM.render(
   <App
     socket={io(env.api.websocketUrl)}
-    {...{companyOperations, companyTypeOperations, userOperations}}
+    {...{companyOperations, companyTypeOperations, userOperations, adminLogin}}
   />,
   document.getElementById('root')
 );

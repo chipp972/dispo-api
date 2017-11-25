@@ -3,6 +3,7 @@ import React from 'react';
 import { AppBar, Typography } from 'material-ui';
 import { SocketIO } from 'socket.io-client';
 import AdminScren from '../AdminScreen/AdminScreen';
+import LoginScreen from '../Login/LoginScreen';
 import './App.css';
 import type {
   Company,
@@ -13,13 +14,14 @@ import type {
   CompanyTypeData
 } from '../../../../src/api/companytype/companytype.type';
 import type { User, UserData } from '../../../../src/api/user/user.type';
-import type { CrudOperations } from '../../api/api';
+import type { CrudOperations, AdminLogin } from '../../api/api';
 
 type AppProps = {
   socket: SocketIO.Socket,
   companyOperations: CrudOperations<CompanyData, Company>,
   companyTypeOperations: CrudOperations<CompanyTypeData, CompanyType>,
-  userOperations: CrudOperations<UserData, User>
+  userOperations: CrudOperations<UserData, User>,
+  adminLogin: AdminLogin
 };
 
 type AppState = {
@@ -87,6 +89,7 @@ export default class App extends React.Component<AppProps, AppState> {
             Dispo administration panel
           </Typography>
         </AppBar>
+        <LoginScreen adminLogin={this.props.adminLogin} />
         <AdminScren
           {...this.state}
           {...this.props}

@@ -4,4 +4,8 @@ export default {
     url: process.env.REACT_APP_API_URL || '/',
     websocketUrl: process.env.REACT_APP_WS_URL || '/'
   },
+  auth0: {
+    url: process.env.REACT_APP_AUTH0_URL || '/',
+    clientId: process.env.REACT_APP_ATH0_CLIENT_ID || ''
+  }
 };

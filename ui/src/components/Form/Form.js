@@ -7,7 +7,8 @@ export type InputDescription = {
   id: string,
   label: string,
   helperText?: string,
-  type: 'select' | 'text' | 'date' | 'password'
+  type: 'select' | 'text' | 'date' | 'password',
+  disabled?: boolean
 };
 
 type FormProps<T> = {
@@ -40,7 +41,7 @@ export default class Form<T> extends Component<FormProps<T>, *> {
     return (
       <form>
         {this.props.inputs.map((inputDescription: InputDescription) => (
-          <FormControl key={`formcontrol_${inputDescription.id}`}>
+          <FormControl key={`formcontrol_${inputDescription.id}`} disabled={inputDescription.disabled === true} >
             <FormInput
               {...inputDescription}
               handleInputChange={this.handleInputChange}
