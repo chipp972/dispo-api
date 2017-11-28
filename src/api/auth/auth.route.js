@@ -8,6 +8,7 @@ import { formatResponse } from '../utils.route';
 import env from '../../config/env';
 import { generate } from 'shortid';
 import moment from 'moment';
+import type { AuthResponse, PasswordLessStartRes } from './auth.type';
 
 moment.locale('fr');
 
@@ -34,7 +35,11 @@ export function initAuthRoutes(
           code,
           expireAt: limitDate
         });
-        return formatResponse(res, 200, { email: admin.email });
+        return formatResponse(
+          res,
+          200,
+          ({ email: admin.email }: PasswordLessStartRes)
+        );
       } catch (err) {
         // catch invalid mail recipient or format errors
         next(err);
@@ -47,22 +52,24 @@ export function initAuthRoutes(
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const { email, code } = req.body;
+        const expireAt = moment().add(
+          env.auth.admin.sessionExpiration,
+          'seconds'
+        );
+
         const admin = await AdminUserModel.findOneAndUpdate(
           { email, code },
-          {
-            $set: {
-              expireAt: moment().add(
-                env.auth.admin.sessionExpiration,
-                'seconds'
-              )
-            }
-          }
+          { $set: { expireAt } }
         );
         if (!admin) {
           return formatResponse(res, 403, { message: 'unauthorized' });
         }
-        const token = jwt.sign(admin, env.auth.secretOrKey);
-        return formatResponse(res, 200, { tokenId: admin._id, token });
+        const token = jwt.sign(admin.toJSON(), env.auth.secretOrKey);
+        return formatResponse(res, 200, {
+          tokenId: admin._id,
+          token,
+          expireAt: expireAt.format()
+        });
       } catch (err) {
         next(err);
       }

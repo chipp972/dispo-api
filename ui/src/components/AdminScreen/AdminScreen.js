@@ -14,8 +14,10 @@ import type {
 } from '../../../../src/api/companytype/companytype.type';
 import type { User, UserData } from '../../../../src/api/user/user.type';
 import type { CrudOperations } from '../../api/api.type';
+import { Redirect } from 'react-router-dom';
 
 type AdminScreenProps = {
+  isAuthenticated: boolean,
   companies: Company[],
   companyTypes: CompanyType[],
   users: User[],
@@ -28,15 +30,16 @@ type AdminScreenProps = {
 };
 
 const AdminScreen = (props: AdminScreenProps) => {
-  console.log(props);
-  return (
-  <div>
-    <AdminMenu {...props} />
-    <CompanyList companies={props.companies} />
-    <CompanyTypeList companyTypes={props.companyTypes} />
-    <UserList users={props.users} />
-  </div>
-);
+  return props.isAuthenticated ? (
+    <div>
+      <AdminMenu {...props} />
+      <CompanyList companies={props.companies} />
+      <CompanyTypeList companyTypes={props.companyTypes} />
+      <UserList users={props.users} />
+    </div>
+  ) : (
+    <Redirect to="/login" />
+  );
 };
 
 export default AdminScreen;

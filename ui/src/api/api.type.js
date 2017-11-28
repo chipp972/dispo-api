@@ -1,19 +1,12 @@
 // @flow
-
-type PasswordLessStartRes = {
-  email: string,
-  email_verified: boolean,
-  _id: string
-};
-
-type TokenRes = {
-  tokenId: string,
-  token: string,
-}
+import type {
+  AuthResponse,
+  PasswordLessStartRes
+} from '../../../src/api/auth/auth.type';
 
 export type AdminLogin = {
   sendCode: (email: string) => Promise<PasswordLessStartRes>,
-  authenticate: (username: string, password: string) => Promise<TokenRes>
+  authenticate: (username: string, password: string) => Promise<AuthResponse>
 };
 
 export type CrudOperations<Data, Model> = {

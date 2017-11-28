@@ -1,18 +1,26 @@
 // @flow
 import React from 'react';
-import { AppBar, Typography } from 'material-ui';
+import { AppBar, Typography, Toolbar, Button } from 'material-ui';
 import { Link } from 'react-router-dom';
+import ExitToApp from 'material-ui-icons/ExitToApp';
 
-export const Header = () => (
+type HeaderProps = {
+  isAuthenticated: boolean
+};
+
+export const Header = (props: HeaderProps) => (
   <AppBar position="static" style={{ padding: 20 }}>
-    <Typography type="title" color="inherit">
-      Dispo administration panel
-    </Typography>
-    <nav>
-      <ul>
-        <li><Link to='/'>Home</Link></li>
-        <li><Link to='/login'>Login</Link></li>
-      </ul>
-    </nav>
+    <Toolbar>
+      <Typography type="title" color="inherit">
+        {"Dispo Panneau d'administration"}
+      </Typography>
+      {props.isAuthenticated && (
+        <Button color="contrast">
+          <Link to="/logout">
+            <ExitToApp />
+          </Link>
+        </Button>
+      )}
+    </Toolbar>
   </AppBar>
 );

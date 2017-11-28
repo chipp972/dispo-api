@@ -1,13 +1,14 @@
 // @flow
 import React from 'react';
 import Form from '../Form/Form';
+import type { AuthResponse } from '../../../../src/api/auth/auth.type';
 import type { AdminLogin } from '../../api/api.type';
-import {setToken, setTokenId} from '../../api/storage';
 
 type AuthFormProps = {
-  handleError: (err: any) => any,
   email: string,
-  adminLogin: AdminLogin
+  adminLogin: AdminLogin,
+  handleError: (err: any) => any,
+  handleLogin: (AuthResponse) => any,
   // refreshToken: (token: string) => any
 };
 
@@ -24,11 +25,7 @@ const AuthForm = (props: AuthFormProps) => (
     onSubmit={({ email, code }) => {
       props.adminLogin
         .authenticate(email, code)
-        .then((res) => {
-          console.log(res);
-          setToken(res.token);
-          setTokenId(res.tokenId);
-        })
+        .then((res: AuthResponse) => props.handleLogin(res))
         .catch((err) => props.handleError(err));
     }}
     onSubmitLabel="S'authentifier"

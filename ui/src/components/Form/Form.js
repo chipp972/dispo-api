@@ -39,7 +39,7 @@ export default class Form<T> extends Component<FormProps<T>, *> {
 
   render() {
     return (
-      <form style={{ display: 'flex', flexFlow: 'column wrap' }}>
+      <form style={{ display: 'flex', flexFlow: 'column wrap', padding: 20 }}>
         {this.props.inputs.map((inputDescription: InputDescription) => (
           <FormControl
             key={`formcontrol_${inputDescription.id}`}

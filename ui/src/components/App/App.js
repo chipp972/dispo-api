@@ -1,8 +1,6 @@
 // @flow
 import React from 'react';
 import { SocketIO } from 'socket.io-client';
-import AdminScreen from '../AdminScreen/AdminScreen';
-import LoginScreen from '../Login/LoginScreen';
 import './App.css';
 import type {
   Company,
@@ -16,6 +14,14 @@ import type { User, UserData } from '../../../../src/api/user/user.type';
 import type { CrudOperations, AdminLogin } from '../../api/api.type';
 import { Header } from '../Header/Header';
 import { Router } from '../Router/Router';
+import {
+  setToken,
+  setTokenId,
+  setExpireAt,
+  getExpireAt,
+  getToken
+} from '../../api/storage';
+import type { AuthResponse } from '../../../../src/api/auth/auth.type';
 
 type AppProps = {
   socket: SocketIO.Socket,
@@ -26,6 +32,7 @@ type AppProps = {
 };
 
 type AppState = {
+  isAuthenticated: boolean,
   companies: Company[],
   companyTypes: CompanyType[],
   users: User[]
@@ -35,6 +42,7 @@ export default class App extends React.Component<AppProps, AppState> {
   constructor(props: AppProps) {
     super(props);
     this.state = {
+      isAuthenticated: this.isLoggedIn(),
       companies: [],
       companyTypes: [],
       users: []
@@ -82,28 +90,39 @@ export default class App extends React.Component<AppProps, AppState> {
       .catch((err) => console.log(err));
   };
 
+  handleLogin = () => this.setState({
+    isAuthenticated: this.isLoggedIn()
+  })
+
+  isLoggedIn = () => {
+    const expireAt: Date = new Date(getExpireAt());
+    const now = new Date();
+    return getToken() !== undefined && expireAt.getTime() > now.getTime();
+  };
+
+  /**
+   * store token informations in localstorage
+   * @param {AuthResponse} authResponse
+   */
+  handleAuthenticate = (authResponse: AuthResponse) => {
+    setToken(authResponse.token);
+    setTokenId(authResponse.tokenId);
+    setExpireAt(authResponse.expireAt);
+    this.handleLogin();
+  };
+
   render() {
     return (
       <div style={{ textAlign: 'center' }}>
-        <Header />
+        <Header isAuthenticated={this.state.isAuthenticated} />
         <Router
           {...this.state}
           {...this.props}
           usersRefresh={this.handleUserRefresh}
           companyTypesRefresh={this.handleCompanyTypesRefresh}
           companiesRefresh={this.handleCompaniesRefresh}
+          handleAuthenticate={this.handleAuthenticate}
         />
-        {/* <LoginScreen
-          adminLogin={this.props.adminLogin}
-          handleError={(err) => console.log(err)}
-        />
-        <AdminScreen
-          {...this.state}
-          {...this.props}
-          usersRefresh={this.handleUserRefresh}
-          companyTypesRefresh={this.handleCompanyTypesRefresh}
-          companiesRefresh={this.handleCompaniesRefresh}
-        /> */}
       </div>
     );
   }
