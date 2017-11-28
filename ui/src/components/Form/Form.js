@@ -39,9 +39,13 @@ export default class Form<T> extends Component<FormProps<T>, *> {
 
   render() {
     return (
-      <form>
+      <form style={{ display: 'flex', flexFlow: 'column wrap' }}>
         {this.props.inputs.map((inputDescription: InputDescription) => (
-          <FormControl key={`formcontrol_${inputDescription.id}`} disabled={inputDescription.disabled === true} >
+          <FormControl
+            key={`formcontrol_${inputDescription.id}`}
+            disabled={inputDescription.disabled === true}
+            style={{ paddingBottom: 20 }}
+          >
             <FormInput
               {...inputDescription}
               handleInputChange={this.handleInputChange}

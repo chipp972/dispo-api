@@ -1,8 +1,7 @@
 // @flow
 import React from 'react';
-import { AppBar, Typography } from 'material-ui';
 import { SocketIO } from 'socket.io-client';
-import AdminScren from '../AdminScreen/AdminScreen';
+import AdminScreen from '../AdminScreen/AdminScreen';
 import LoginScreen from '../Login/LoginScreen';
 import './App.css';
 import type {
@@ -15,13 +14,15 @@ import type {
 } from '../../../../src/api/companytype/companytype.type';
 import type { User, UserData } from '../../../../src/api/user/user.type';
 import type { CrudOperations, AdminLogin } from '../../api/api.type';
+import { Header } from '../Header/Header';
+import { Router } from '../Router/Router';
 
 type AppProps = {
   socket: SocketIO.Socket,
   companyOperations: CrudOperations<CompanyData, Company>,
   companyTypeOperations: CrudOperations<CompanyTypeData, CompanyType>,
   userOperations: CrudOperations<UserData, User>,
-  adminLogin: AdminLogin,
+  adminLogin: AdminLogin
 };
 
 type AppState = {
@@ -84,19 +85,25 @@ export default class App extends React.Component<AppProps, AppState> {
   render() {
     return (
       <div style={{ textAlign: 'center' }}>
-        <AppBar position="static" style={{ padding: 20 }}>
-          <Typography type="title" color="inherit">
-            Dispo administration panel
-          </Typography>
-        </AppBar>
-        <LoginScreen adminLogin={this.props.adminLogin} handleError={(err) => console.log(err)} />
-        <AdminScren
+        <Header />
+        <Router
           {...this.state}
           {...this.props}
           usersRefresh={this.handleUserRefresh}
           companyTypesRefresh={this.handleCompanyTypesRefresh}
           companiesRefresh={this.handleCompaniesRefresh}
         />
+        {/* <LoginScreen
+          adminLogin={this.props.adminLogin}
+          handleError={(err) => console.log(err)}
+        />
+        <AdminScreen
+          {...this.state}
+          {...this.props}
+          usersRefresh={this.handleUserRefresh}
+          companyTypesRefresh={this.handleCompanyTypesRefresh}
+          companiesRefresh={this.handleCompaniesRefresh}
+        /> */}
       </div>
     );
   }

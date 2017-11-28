@@ -4,8 +4,6 @@ import smtpTransport from 'nodemailer-smtp-transport';
 import moment from 'moment-timezone';
 import env from '../env';
 
-moment.locale('fr');
-
 type Destination = string | string[];
 
 const smtpConfig = smtpTransport({
@@ -43,9 +41,10 @@ export const sendMail = (subject: string, html: string) => (
 /**
  * send a mail for passwordless authentication
  * @param {string} code
+ * @param {string} limitDate
  * @return {Function}
  */
-export const sendPasswordlessAuthMail = (code: string) =>
+export const sendPasswordlessAuthMail = (code: string, limitDate: string) =>
   sendMail(
     'Authentification',
     `<p style="font-size:14px">Bonjour,
@@ -56,8 +55,5 @@ export const sendPasswordlessAuthMail = (code: string) =>
   <p style="font-size:24px"><strong>${code}</strong><br/><br/></p>
 
   Ce code est à utilisation <strong>unique</strong>.<br/>
-  Ce code est valable jusqu'à ${moment()
-    .tz('Europe/Paris')
-    .add(env.auth.admin.validDuration, 'seconds')
-    .format('LT')}.</p>`
+  Ce code est valable jusqu'à ${limitDate}.</p>`
   );

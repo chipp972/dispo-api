@@ -1,27 +1,40 @@
 // @flow
-import { Model, Schema } from 'mongoose';
+import { Model } from 'mongoose';
 
-export type CrudOperation = (id: number, data?: any) => Promise<any>;
+export type ReqUser = { _id: string, role?: string };
+
+export type CrudOptions = {
+  id?: string,
+  data?: any,
+  user?: ReqUser
+};
+
+export type CrudOperation = CrudOptions => Promise<any>;
 
 export type CrudOperations<ModelT, DataT> = {
   getAll: () => Promise<ModelT[]>,
-  getById: (id: Schema.Types.ObjectId) => Promise<ModelT>,
-  create: (data: DataT) => Promise<ModelT>,
-  edit: (id: Schema.Types.ObjectId, obj: any) => Promise<ModelT>,
-  remove: (id: Schema.Types.ObjectId) => Promise<ModelT>
+  getById: ({ id: string }) => Promise<ModelT>,
+  create: ({ data: DataT }) => Promise<ModelT>,
+  edit: ({ id: string, data: any, user: ReqUser }) => Promise<ModelT>,
+  remove: ({ id: string, user: ReqUser }) => Promise<ModelT>
 };
+
+type MongooseCrudGenerator<T, T2> = (model: Model<T>) => CrudOperations<T, T2>;
+
+export const isUserAuthorized = (obj: any, user: ReqUser): boolean =>
+  user.role === 'admin' || obj.owner === user._id;
 
 /**
  * generate mongoose operations
+ * @param {Model} model
+ * @return {CrudOperations}
  */
-type MongooseCrudGenerator<T, T2> = (model: Model<T>) => CrudOperations<T, T2>;
-
 export const generateCrudOperations: MongooseCrudGenerator<*, *> = <
   ModelT,
   DataT
 >(
-    model
-  ): CrudOperations<ModelT, DataT> => ({
+  model: Model
+): CrudOperations<ModelT, DataT> => ({
   getAll: async (): Promise<ModelT[]> => {
     try {
       const objList = await model.find({});
@@ -30,7 +43,7 @@ export const generateCrudOperations: MongooseCrudGenerator<*, *> = <
       throw err;
     }
   },
-  getById: async (id: string): Promise<ModelT> => {
+  getById: async ({ id }): Promise<ModelT> => {
     try {
       const obj = await model.findById(id);
       return obj;
@@ -38,7 +51,7 @@ export const generateCrudOperations: MongooseCrudGenerator<*, *> = <
       throw err;
     }
   },
-  create: async (data: DataT): Promise<ModelT> => {
+  create: async ({ data }): Promise<ModelT> => {
     try {
       const obj = await model.create(data);
       return obj;
@@ -46,17 +59,31 @@ export const generateCrudOperations: MongooseCrudGenerator<*, *> = <
       throw err;
     }
   },
-  edit: async (id: string, data: ModelT): Promise<ModelT> => {
+  edit: async ({ id, data, user }): Promise<ModelT> => {
     try {
-      const obj = await model.findByIdAndUpdate(id, data);
+      const obj = await model.findById(id);
+      if (!isUserAuthorized(obj, user)) {
+        throw new Error('unauthorized operation');
+      }
+      await model.updateOne(
+        { _id: id },
+        { $set: { data } },
+        {
+          runSettersOnQuery: true
+        }
+      );
       return obj;
     } catch (err) {
       throw err;
     }
   },
-  remove: async (id: string): Promise<ModelT> => {
+  remove: async ({ id, user }): Promise<ModelT> => {
     try {
-      const obj = await model.findByIdAndRemove(id);
+      const obj = await model.findById(id);
+      if (!isUserAuthorized(obj, user)) {
+        throw new Error('unauthorized operation');
+      }
+      await model.remove({ _id: id });
       return obj;
     } catch (err) {
       throw err;

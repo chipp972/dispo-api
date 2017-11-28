@@ -13,7 +13,7 @@ import type {
   CompanyTypeData
 } from '../../../../src/api/companytype/companytype.type';
 import type { User, UserData } from '../../../../src/api/user/user.type';
-import type { CrudOperations } from '../../api/api';
+import type { CrudOperations } from '../../api/api.type';
 
 type AdminScreenProps = {
   companies: Company[],
@@ -27,7 +27,9 @@ type AdminScreenProps = {
   userOperations: CrudOperations<UserData, User>
 };
 
-const AdminScreen = (props: AdminScreenProps) => (
+const AdminScreen = (props: AdminScreenProps) => {
+  console.log(props);
+  return (
   <div>
     <AdminMenu {...props} />
     <CompanyList companies={props.companies} />
@@ -35,5 +37,6 @@ const AdminScreen = (props: AdminScreenProps) => (
     <UserList users={props.users} />
   </div>
 );
+};
 
 export default AdminScreen;

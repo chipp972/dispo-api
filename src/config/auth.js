@@ -15,11 +15,11 @@ export const configurePassport = function(
   };
 
   const strategy = new Strategy(opts, (jwtPayload, done) => {
-    const { _id, email, code } = jwtPayload._doc;
-    const { role } = jwtPayload;
+    console.log(jwtPayload);
+    const { _id, email, code, role } = jwtPayload;
     const model = role === 'admin' ? AdminModel : UserModel;
     model
-      .findById(_id)
+      .findOne({ _id, email, code, role })
       .then((account) => {
         if (!account) done(undefined, false);
         done(undefined, account);

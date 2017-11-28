@@ -2,7 +2,7 @@
 import React from 'react';
 import { Tabs, Tab } from 'material-ui';
 import BuisinessIcon from 'material-ui-icons/Business';
-import GroupWorkIcon from 'material-ui-icons/GroupWork';
+import WorkIcon from 'material-ui-icons/Work';
 import FaceIcon from 'material-ui-icons/Face';
 import SwipeableViews from 'react-swipeable-views';
 
@@ -19,7 +19,7 @@ import type {
   CompanyTypeData
 } from '../../../../src/api/companytype/companytype.type';
 import type { User, UserData } from '../../../../src/api/user/user.type';
-import type { CrudOperations } from '../../api/api';
+import type { CrudOperations } from '../../api/api.type';
 
 type AdminMenuProps = {
   companies: Company[],
@@ -68,12 +68,12 @@ export default class AdminMenu extends React.Component<
           value={this.state.value}
           onChange={this.handleChange}
           fullWidth
-          indicatorColor="primqry"
+          indicatorColor="primary"
           textColor="primary"
         >
-          <Tab icon={<GroupWorkIcon />} label="GENERAL" />
-          <Tab icon={<FaceIcon />} label="USER" />
-          <Tab icon={<BuisinessIcon />} label="COMPANY" />
+          <Tab icon={<FaceIcon />} label="UTILISATEURS" />
+          <Tab icon={<WorkIcon />} label="TYPE D'ENTREPRISE" />
+          <Tab icon={<BuisinessIcon />} label="ENTREPRISE" />
         </Tabs>
         <SwipeableViews
           axis={'ltr' === 'rtl' ? 'x-reverse' : 'x'}
@@ -81,10 +81,10 @@ export default class AdminMenu extends React.Component<
           onChangeIndex={this.handleChangeIndex}
         >
           <TabContainer dir="ltr">
-            <CompanyTypeForm {...this.props} />
+            <UserForm {...this.props} />
           </TabContainer>
           <TabContainer dir="ltr">
-            <UserForm {...this.props} />
+            <CompanyTypeForm {...this.props} />
           </TabContainer>
           <TabContainer dir="ltr">
             <CompanyForm {...this.props} />

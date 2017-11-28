@@ -31,13 +31,17 @@ export default class LoginScreen extends React.Component<
   handleEmailSent = (email: string) => {
     console.log(email);
     this.setState({ isEmailSent: true, email });
-  }
+  };
 
-  handleError = (res: any) => console.log(res)
+  handleError = (res: any) => console.log(res);
 
   render() {
     return this.state.isEmailSent ? (
-      <AuthForm {...this.props} email={this.state.email} handleError={this.handleError} />
+      <AuthForm
+        {...this.props}
+        email={this.state.email}
+        handleError={this.handleError}
+      />
     ) : (
       <LoginForm
         {...this.props}

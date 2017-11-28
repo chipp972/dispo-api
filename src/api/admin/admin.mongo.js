@@ -15,6 +15,7 @@ export const getAdminModel = (dbConnection: Connection): Model => {
       trim: true,
       required: true
     },
+    role: { type: String, default: 'admin' },
     createdAt: { type: Date, default: Date.now() },
     expireAt: { type: Date, default: undefined }
   });

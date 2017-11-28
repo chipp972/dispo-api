@@ -9,6 +9,8 @@ import env from '../../config/env';
 import { generate } from 'shortid';
 import moment from 'moment';
 
+moment.locale('fr');
+
 export function initAuthRoutes(
   UserModel: Model,
   AdminUserModel: Model
@@ -21,15 +23,20 @@ export function initAuthRoutes(
       try {
         const { email } = req.body;
         const code: string = generate();
+        const limitDate = moment().add(env.auth.admin.validDuration, 'seconds');
         await AdminUserModel.remove({ email });
-        await sendPasswordlessAuthMail(code)(email);
+        await sendPasswordlessAuthMail(
+          code,
+          limitDate.tz('Europe/Paris').format('LT')
+        )(email);
         const admin = await AdminUserModel.create({
           email,
           code,
-          expireAt: moment().add(env.auth.admin.validDuration, 'seconds')
+          expireAt: limitDate
         });
         return formatResponse(res, 200, { email: admin.email });
       } catch (err) {
+        // catch invalid mail recipient or format errors
         next(err);
       }
     }
@@ -54,10 +61,7 @@ export function initAuthRoutes(
         if (!admin) {
           return formatResponse(res, 403, { message: 'unauthorized' });
         }
-        const token = jwt.sign(
-          { ...admin, role: 'admin' },
-          env.auth.secretOrKey,
-        );
+        const token = jwt.sign(admin, env.auth.secretOrKey);
         return formatResponse(res, 200, { tokenId: admin._id, token });
       } catch (err) {
         next(err);
@@ -82,7 +86,7 @@ export function initAuthRoutes(
       failureRedirect: '/auth/failure'
     }),
     (req: Request, res: Response, next: NextFunction) => {
-      console.log();
+      console.log(req.user);
       next();
     }
   );

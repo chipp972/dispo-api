@@ -7,20 +7,23 @@ import env from './env';
 import {
   companyOperations,
   companyTypeOperations,
-  userOperations,
+  userOperations
 } from './api/api';
 import { adminLogin } from './api/auth';
+import { BrowserRouter } from 'react-router-dom';
 
 ReactDOM.render(
-  <App
-    socket={io(env.api.websocketUrl)}
-    {...{
-      companyOperations,
-      companyTypeOperations,
-      userOperations,
-      adminLogin,
-    }}
-  />,
+  <BrowserRouter>
+    <App
+      socket={io(env.api.websocketUrl)}
+      {...{
+        companyOperations,
+        companyTypeOperations,
+        userOperations,
+        adminLogin
+      }}
+    />
+  </BrowserRouter>,
   document.getElementById('root')
 );
 registerServiceWorker();
