@@ -25,6 +25,7 @@
     "bull": "3.3.6",
     "connect-ensure-login": "0.1.1",
     "cors": "2.8.4",
+    "export-files": "2.1.1",
     "express": "4.16.2",
     "foreman": "2.0.0",
     "helmet": "3.9.0",
