@@ -6,6 +6,6 @@ export type AuthResponse = {
   expireAt: string
 }
 
-export type PasswordLessStartRes = {
+export type PasswordLessStartResponse = {
   email: string,
 };

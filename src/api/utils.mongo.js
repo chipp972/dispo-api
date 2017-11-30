@@ -65,14 +65,9 @@ export const generateCrudOperations: MongooseCrudGenerator<*, *> = <
       if (!isUserAuthorized(obj, user)) {
         throw new Error('unauthorized operation');
       }
-      await model.updateOne(
-        { _id: id },
-        { $set: { data } },
-        {
-          runSettersOnQuery: true
-        }
-      );
-      return obj;
+      await obj.update({ $set: data });
+      const newObj = await model.findById(id);
+      return newObj;
     } catch (err) {
       throw err;
     }
@@ -83,6 +78,7 @@ export const generateCrudOperations: MongooseCrudGenerator<*, *> = <
       if (!isUserAuthorized(obj, user)) {
         throw new Error('unauthorized operation');
       }
+      // TODO: maybe just use obj.remove()
       await model.remove({ _id: id });
       return obj;
     } catch (err) {

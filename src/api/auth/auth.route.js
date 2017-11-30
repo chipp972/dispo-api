@@ -8,7 +8,7 @@ import { formatResponse } from '../utils.route';
 import env from '../../config/env';
 import { generate } from 'shortid';
 import moment from 'moment';
-import type { AuthResponse, PasswordLessStartRes } from './auth.type';
+import type { AuthResponse, PasswordLessStartResponse } from './auth.type';
 
 moment.locale('fr');
 
@@ -38,7 +38,7 @@ export function initAuthRoutes(
         return formatResponse(
           res,
           200,
-          ({ email: admin.email }: PasswordLessStartRes)
+          ({ email: admin.email }: PasswordLessStartResponse)
         );
       } catch (err) {
         // catch invalid mail recipient or format errors

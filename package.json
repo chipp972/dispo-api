@@ -1,15 +1,18 @@
 {
   "name": "dispo-api",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Back-end API for dispo app",
+  "main": "./lib/index.js",
   "engines": {
-    "node": "8.9.1"
+    "node": "8.9.3"
   },
-  "main": "./public-api/index.js",
   "scripts": {
+    "build:app": "babel src/ -d build/",
+    "build:lib": "babel public/ -d lib/ && flow-copy-source public/ lib/",
     "dev": "nf start devapi",
     "test": "nf start test",
-    "prestart": "babel src/ -d build/",
+    "postinstall": "npm run build:lib && npm run build:app",
+    "prestart": "npm run build:app",
     "start": "nf start web"
   },
   "dependencies": {
@@ -25,8 +28,8 @@
     "bull": "3.3.6",
     "connect-ensure-login": "0.1.1",
     "cors": "2.8.4",
-    "export-files": "2.1.1",
     "express": "4.16.2",
+    "flow-copy-source": "1.2.1",
     "foreman": "2.0.0",
     "helmet": "3.9.0",
     "ioredis": "3.2.1",
@@ -47,7 +50,6 @@
     "winston": "2.4.0"
   },
   "devDependencies": {
-    "@types/bull": "3.3.0",
     "babel-eslint": "8.0.2",
     "babel-register": "6.26.0",
     "eslint": "4.12.0",
