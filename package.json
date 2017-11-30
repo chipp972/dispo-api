@@ -1,6 +1,6 @@
 {
   "name": "dispo-api",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Back-end API for dispo app",
   "engines": {
     "node": "8.9.1"

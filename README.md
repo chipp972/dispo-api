@@ -1,8 +1,9 @@
-# node-js-getting-started
+# Dispo API
 
-A barebones Node.js app using [Express 4](http://expressjs.com/).
+## public API
 
-This application supports the [Getting Started with Node on Heroku](https://devcenter.heroku.com/articles/getting-started-with-nodejs) article - check it out.
+authAPI: to authenticate admin and users
+dataAPI: to fetch data from the api
 
 ## Running Locally
 
