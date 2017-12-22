@@ -2,7 +2,7 @@
 import { SocketIO } from 'socket.io';
 import { Queue, Job } from 'bull';
 import { Redis } from 'ioredis';
-import env from '../env';
+import env from '../../config/env';
 import { addToHash, removeFromHash } from '../../api/utils.redis';
 
 // TODO: implement https://github.com/OptimalBits/bull/blob/master/PATTERNS.md#reusing-redis-connections
@@ -25,13 +25,19 @@ export default function syncQueues(redis: Redis, socket: SocketIO.Socket) {
       case 'add':
         return addToHash(redis, hashKey, dataKey, data)
           .then(() =>
-            Promise.resolve(socket.in(channelName).broadcast.emit(channelMessage, data)))
-          .catch(err => Promise.reject(err));
+            Promise.resolve(
+              socket.in(channelName).broadcast.emit(channelMessage, data)
+            )
+          )
+          .catch((err: Error) => Promise.reject(err));
       case 'remove':
         return removeFromHash(redis, hashKey, dataKey)
           .then(() =>
-            Promise.resolve(socket.in(channelName).broadcast.emit(channelMessage, data)))
-          .catch(err => Promise.reject(err));
+            Promise.resolve(
+              socket.in(channelName).broadcast.emit(channelMessage, data)
+            )
+          )
+          .catch((err: Error) => Promise.reject(err));
       default:
         return Promise.reject(new Error('No known type for sync operation'));
     }

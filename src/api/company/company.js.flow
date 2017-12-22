@@ -1,6 +1,6 @@
 // @flow
 import { Document } from 'mongoose';
-import type { ScheduleWeek } from '../schedule/schedule.type';
+import type { ScheduleWeek } from '../schedule/schedule';
 
 export interface CompanyData {
   owner: string;

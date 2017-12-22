@@ -1,10 +1,7 @@
 {
   "name": "dispo-api",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Back-end API for dispo app",
-  "engines": {
-    "node": "8.9.3"
-  },
   "main": "./public-api/index.js",
   "scripts": {
     "dev": "nf start devapi",

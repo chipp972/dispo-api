@@ -1,8 +1,10 @@
 // @flow
 import { Schema, Model, Connection } from 'mongoose';
-import type { CompanyType } from './companytype.type';
+import type { CompanyType } from './companytype';
 
-export const getCompanyTypeModel = (dbConnection: Connection): Model<CompanyType> => {
+export const getCompanyTypeModel = (
+  dbConnection: Connection
+): Model<CompanyType> => {
   const CompanyTypeSchema = new Schema({
     name: {
       type: String,

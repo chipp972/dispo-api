@@ -1,18 +1,13 @@
 // @flow
 import { createTransport } from 'nodemailer';
 import smtpTransport from 'nodemailer-smtp-transport';
-import moment from 'moment-timezone';
-import env from '../env';
+import env from '../../config/env';
 
-type Destination = string | string[];
-
+const { host, port, user, pass } = env.mail;
 const smtpConfig = smtpTransport({
-  host: env.mail.host,
-  port: env.mail.port,
-  auth: {
-    user: env.mail.login,
-    pass: env.mail.password
-  }
+  host,
+  port,
+  auth: { user, pass }
 });
 
 const mailer = createTransport(smtpConfig);
@@ -24,7 +19,7 @@ const mailer = createTransport(smtpConfig);
  * @return {Function} a function that take a recepient and send the mail
  */
 export const sendMail = (subject: string, html: string) => (
-  to: Destination
+  to: string | string[]
 ): Promise<void> =>
   new Promise((resolve, reject) => {
     mailer.sendMail(

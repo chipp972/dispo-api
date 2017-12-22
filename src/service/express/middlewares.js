@@ -5,8 +5,8 @@ import bodyParser from 'body-parser';
 import { Application } from 'express';
 import passport from 'passport';
 import { Model } from 'mongoose';
-import { configurePassport } from './auth';
-import env from '../config/env';
+import { configurePassport } from '../passport/passport_config';
+import env from '../../config/env';
 
 /**
  * add middlewares to express app

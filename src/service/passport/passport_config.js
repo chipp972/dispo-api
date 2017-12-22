@@ -2,7 +2,7 @@
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import { Model } from 'mongoose';
 import passport, { AuthenticateOptions } from 'passport';
-import env from './env';
+import env from '../../config/env';
 
 export const configurePassport = function(
   UserModel: Model,

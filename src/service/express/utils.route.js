@@ -1,6 +1,10 @@
 // @flow
 import { Request, Response, NextFunction, Router } from 'express';
-import type { CrudOperation, CrudOperations, CrudOptions } from './utils.mongo';
+import type {
+  CrudOperation,
+  CrudOperations,
+  CrudOptions
+} from '../mongodb/mongodb';
 
 /**
  * format a successful response

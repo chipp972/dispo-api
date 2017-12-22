@@ -1,6 +1,6 @@
 // @flow
 import Redis from 'ioredis';
-import type { Company } from './company.type';
+import type { Company } from './company';
 
 /**
  * keys used in the datastore

@@ -1,6 +1,6 @@
 // @flow
 import { createClient } from '@google/maps';
-import env from '../env';
+import env from '../../config/env';
 
 const mapClient = createClient({
   key: env.google.apiKey,

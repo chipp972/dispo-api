@@ -1,6 +1,6 @@
 {
-  "name": "Start on Heroku: Node.js",
-  "description": "A barebones Node.js app using Express 4",
+  "name": "Dispo API",
+  "description": "REST API running on Express 4 and mongodb",
   "repository": "git@github.com:chipp972/dispo-api.git",
   "logo": "https://cdn.rawgit.com/heroku/node-js-getting-started/master/public/node.svg",
   "keywords": [],

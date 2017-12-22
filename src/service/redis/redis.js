@@ -3,16 +3,18 @@ import Redis from 'ioredis';
 import RedisMock from 'ioredis-mock';
 import { LoggerInstance } from 'winston';
 import redisMockObject from './redis.mock';
-import env from '../env';
+import env from '../../config/env';
 
-export default async function initRedis(logger: LoggerInstance): Promise<Redis.Redis> {
+export default async function initRedis(
+  logger: LoggerInstance
+): Promise<Redis.Redis> {
   // connection
   const redis: Redis.Redis =
     env.nodeEnv === 'production'
       ? new Redis(env.database.redisUrl)
       : new Redis(env.database.redisUrl, {
-        retryStrategy: () => false
-      });
+          retryStrategy: () => false
+        });
 
   return new Promise((resolve, reject) => {
     // error handling

@@ -16,7 +16,7 @@ export default {
     sessionExpiration: process.env.TOKEN_EXPIRATION || 86400,
     admin: {
       validDuration: process.env.ADMIN_CODE_VALID_DURATION || 300,
-      sessionExpiration: process.env.ADMIN_TOKEN_EXPIRATION || 2700,
+      sessionExpiration: process.env.ADMIN_TOKEN_EXPIRATION || 2700
     }
   },
   queue: {
@@ -31,10 +31,10 @@ export default {
     apiKey: process.env.MAILGUN_API_KEY || '',
     domain: process.env.MAILGUN_DOMAIN || '',
     publicKey: process.env.MAILGUN_PUBLIC_KEY || '',
-    login: process.env.MAILGUN_SMTP_LOGIN || '',
-    password: process.env.MAILGUN_SMTP_PASSWORD || '',
     host: process.env.MAILGUN_SMTP_SERVER || '',
-    port: process.env.MAILGUN_SMTP_PORT || ''
+    port: process.env.MAILGUN_SMTP_PORT || '',
+    user: process.env.MAILGUN_SMTP_LOGIN || '',
+    pass: process.env.MAILGUN_SMTP_PASSWORD || ''
   },
   switchToUnavailableDelay: process.env.SWITCH_TO_UNAVAILABLE || 900
 };

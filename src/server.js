@@ -4,10 +4,10 @@ import http, { Server } from 'http';
 import { Router } from 'express';
 import { LoggerInstance } from 'winston';
 
-import initApp from './config/app';
-import initRedis from './config/database/redis';
-import initMongo from './config/database/mongodb';
-import initWebsocket from './config/websocket';
+import initApp from './service/express/app';
+import initRedis from './service/redis/redis';
+import initMongoose from './service/mongodb/mongodb';
+import initWebsocket from './service/websocket/websocket';
 import getLogger from './config/logger';
 import env from './config/env';
 
@@ -68,7 +68,7 @@ function handleError(server: Server, logger: LoggerInstance) {
   try {
     // db connections
     const redis = await initRedis(logger);
-    const mongodb = await initMongo(logger);
+    const mongodb = await initMongoose(logger);
 
     // mongoose models
     const AdminModel = getAdminModel(mongodb);

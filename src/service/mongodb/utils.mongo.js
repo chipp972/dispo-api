@@ -1,25 +1,10 @@
 // @flow
 import { Model } from 'mongoose';
-
-export type ReqUser = { _id: string, role?: string };
-
-export type CrudOptions = {
-  id?: string,
-  data?: any,
-  user?: ReqUser
-};
-
-export type CrudOperation = CrudOptions => Promise<any>;
-
-export type CrudOperations<ModelT, DataT> = {
-  getAll: () => Promise<ModelT[]>,
-  getById: ({ id: string }) => Promise<ModelT>,
-  create: ({ data: DataT }) => Promise<ModelT>,
-  edit: ({ id: string, data: any, user: ReqUser }) => Promise<ModelT>,
-  remove: ({ id: string, user: ReqUser }) => Promise<ModelT>
-};
-
-type MongooseCrudGenerator<T, T2> = (model: Model<T>) => CrudOperations<T, T2>;
+import type {
+  ReqUser,
+  CrudOperations,
+  MongooseCrudGenerator
+} from './mongodb';
 
 export const isUserAuthorized = (obj: any, user: ReqUser): boolean =>
   user.role === 'admin' || obj.owner === user._id;

@@ -3,7 +3,7 @@ export type AdminData = {
   email: string,
 };
 
-export interface Admin extends AdminData {
+export interface AdminUser extends AdminData {
   _id: string,
   code: string,
   createAt: Date,

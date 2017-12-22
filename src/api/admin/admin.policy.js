@@ -1,11 +1,12 @@
 // @flow
 import { Router } from 'express';
 import { Model } from 'mongoose';
-import type { AdminConfig, AdminUser } from './admin.type';
+import type { AdminUser } from './admin';
 
-export function getAdminPolicy(AdminUserModel: Model<AdminUser>, AdminConfigModel: Model<AdminConfig>): Router {
+export function getAdminPolicy(
+  AdminUserModel: Model<AdminUser>,
+): Router {
   const router = Router();
-
 
   return router;
 }

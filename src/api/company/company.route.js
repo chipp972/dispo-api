@@ -1,10 +1,10 @@
 // @flow
 import { Router } from 'express';
 import { Model } from 'mongoose';
-import type { Company, CompanyData } from './company.type';
-import { generateCrudRoutes } from '../utils.route';
-import { generateCrudOperations } from '../utils.mongo';
-import type { CrudOperations } from '../utils.mongo';
+import { generateCrudRoutes } from '../../service/express/utils.route';
+import { generateCrudOperations } from '../../service/mongodb/utils.mongo';
+import type { CrudOperations } from '../../service/mongodb/mongodb';
+import type { Company, CompanyData } from './company';
 
 /**
  * init express route for company
@@ -14,8 +14,10 @@ import type { CrudOperations } from '../utils.mongo';
 export function initCompanyRoutes(CompanyModel: Model<Company>): Router {
   const router = Router();
 
-  const operations: CrudOperations<CompanyData,
-    Company> = generateCrudOperations(CompanyModel);
+  const operations: CrudOperations<
+    CompanyData,
+    Company
+  > = generateCrudOperations(CompanyModel);
   const routes = generateCrudRoutes(operations);
 
   router.use('/company', routes);

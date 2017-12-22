@@ -1,9 +1,9 @@
 // @flow
 import { Router } from 'express';
 import { Model } from 'mongoose';
-import type { User } from './user.type';
-import { generateCrudRoutes } from '../utils.route';
-import { generateCrudOperations } from '../utils.mongo';
+import { generateCrudRoutes } from '../../service/express/utils.route';
+import { generateCrudOperations } from '../../service/mongodb/utils.mongo';
+import type { User } from './user';
 
 export function initUserRoutes(UserModel: Model<User>): Router {
   const router = Router();
