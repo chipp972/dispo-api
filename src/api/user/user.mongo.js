@@ -1,6 +1,6 @@
 // @flow
 import { Schema, Model, Connection } from 'mongoose';
-import type { User } from './user.type';
+import type { User } from './user';
 
 export const getUserModel = (dbConnection: Connection): Model<User> => {
   const UserSchema = new Schema({

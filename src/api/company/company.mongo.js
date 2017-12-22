@@ -1,10 +1,10 @@
 // @flow
 import { Model, Schema, Connection } from 'mongoose';
-import { mapUtil } from '../../config/map/map.utils';
-import type { Company } from './company.type';
-import type { CompanyType } from '../companytype/companytype.type';
-import type { User } from '../user/user.type';
+import { mapUtil } from '../../service/google/map.utils';
 import { WeekSchema } from '../schedule/schedule.mongo';
+import type { Company } from './company';
+import type { CompanyType } from '../companytype/companytype';
+import type { User } from '../user/user';
 
 export const getCompanyModel = (
   dbConnection: Connection,

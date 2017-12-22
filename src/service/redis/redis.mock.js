@@ -25,7 +25,7 @@ export default {
       'type:2': 'plomberie'
     },
     'company:id': 1,
-    company: {
+    'company': {
       'comp:1': `{name:'comp0', type:0}`
     }
   }

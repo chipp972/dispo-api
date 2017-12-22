@@ -13,7 +13,7 @@ export type ChannelConfig = {
 
 export type ChannelConfigFactory = (
   socket: SocketIO.Socket,
-  databaseInstance: any,
+  databaseInstance: any
 ) => ChannelConfig;
 
 /**
@@ -44,13 +44,11 @@ function initChannels(
 ): void {
   channelConfigFactories
     .map((channelConfigFactory: ChannelConfigFactory) =>
-      channelConfigFactory(socket, database))
+      channelConfigFactory(socket, database)
+    )
     .forEach((channelConfig: ChannelConfig) =>
-      initChannel(
-        socket,
-        database,
-        channelConfig
-      ));
+      initChannel(socket, database, channelConfig)
+    );
 }
 
 export default function initWebsocket(
@@ -67,9 +65,12 @@ export default function initWebsocket(
     // channels initialisation
     initChannels(socket, database, channelConfigFactories);
 
-    socket.on('error', err => logger.log('error', 'websocket:general', err));
+    socket.on('error', (err: Error) =>
+      logger.log('error', 'websocket:general', err)
+    );
     socket.on('close', () =>
-      logger.log('info', 'websocket:general', 'client disconnected'));
+      logger.log('info', 'websocket:general', 'client disconnected')
+    );
   });
 
   logger.log('info', 'websocket channels', 'initialized');

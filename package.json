@@ -1,11 +1,8 @@
 {
   "name": "dispo-api",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "Back-end API for dispo app",
   "main": "./lib/index.js",
-  "engines": {
-    "node": "8.9.3"
-  },
   "scripts": {
     "build:app": "babel src/ -d build/",
     "build:lib": "babel public/ -d lib/ && flow-copy-source public/ lib/",

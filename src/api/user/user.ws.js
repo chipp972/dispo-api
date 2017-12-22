@@ -1,6 +1,6 @@
 // @flow
 import { SocketIO } from 'socket.io';
-import { getUserById, getAllUsers, modifyUser, removeUser } from './user.db';
+import { getUserById, getAllUsers, modifyUser, removeUser } from './user.redis';
 
 const channelName = 'user';
 
