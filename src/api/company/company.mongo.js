@@ -41,7 +41,6 @@ export const getCompanyModel = (
     schedule: WeekSchema
   });
 
-  // eslint-disable-next-line
   const preSaveChecks = async function(next) {
     try {
       const company: Company = this || {};

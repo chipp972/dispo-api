@@ -1,5 +1,6 @@
 // @flow
 import { Schema, Model, Connection } from 'mongoose';
+import { hashPassword, isValidPassword } from './user.helper';
 import type { User } from './user';
 
 export const getUserModel = (dbConnection: Connection): Model<User> => {
@@ -22,6 +23,21 @@ export const getUserModel = (dbConnection: Connection): Model<User> => {
     phoneNumber: String,
     address: String
   });
+
+  const preSaveChecks = async function(next) {
+    try {
+      const user: User = this || {};
+      // hash password
+      const hash = await hashPassword(user.password);
+      user.password = hash;
+      return next();
+    } catch (err) {
+      return next(err);
+    }
+  };
+
+  UserSchema.pre('save', preSaveChecks);
+  UserSchema.pre('update', preSaveChecks);
 
   return dbConnection.model('User', UserSchema);
 };

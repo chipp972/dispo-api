@@ -1,10 +1,6 @@
 // @flow
 import { Model } from 'mongoose';
-import type {
-  ReqUser,
-  CrudOperations,
-  MongooseCrudGenerator
-} from './mongodb';
+import type { ReqUser, CrudOperations, MongooseCrudGenerator } from './mongodb';
 
 export const isUserAuthorized = (obj: any, user: ReqUser): boolean =>
   user.role === 'admin' || obj.owner === user._id;
@@ -63,8 +59,7 @@ export const generateCrudOperations: MongooseCrudGenerator<*, *> = <
       if (!isUserAuthorized(obj, user)) {
         throw new Error('unauthorized operation');
       }
-      // TODO: maybe just use obj.remove()
-      await model.remove({ _id: id });
+      await obj.remove();
       return obj;
     } catch (err) {
       throw err;

@@ -21,6 +21,7 @@
     "babel-preset-env": "1.6.1",
     "babel-preset-flow": "^6.23.0",
     "babel-runtime": "^6.26.0",
+    "bcrypt": "1.0.3",
     "body-parser": "1.18.2",
     "bull": "3.3.6",
     "connect-ensure-login": "0.1.1",

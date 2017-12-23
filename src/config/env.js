@@ -14,6 +14,7 @@ export default {
   auth: {
     secretOrKey: process.env.AUTH_SECRET_OR_KEY || 'space_cat',
     sessionExpiration: process.env.TOKEN_EXPIRATION || 86400,
+    saltRounds: process.env.SALT_ROUNDS || 12,
     admin: {
       validDuration: process.env.ADMIN_CODE_VALID_DURATION || 300,
       sessionExpiration: process.env.ADMIN_TOKEN_EXPIRATION || 2700
