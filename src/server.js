@@ -1,27 +1,24 @@
 // @flow
 import http, { Server } from 'http';
 // import https from 'https';
-import { Router } from 'express';
-import { LoggerInstance } from 'winston';
+import type { AppRoutes } from './service/express/routes';
 
 import initApp from './service/express/app';
-import initRedis from './service/redis/redis';
-import initMongoose from './service/mongodb/mongodb';
-import initWebsocket from './service/websocket/websocket';
-import getLogger from './config/logger';
+// import initRedis from './service/redis/redis';
+import { initMongoose } from './service/mongodb/mongoose';
+// import initWebsocket from './service/websocket/websocket';
+import { LoggerInstance } from 'winston';
+import LOGGER from './config/logger';
 import env from './config/env';
 
 // auth
-import { initAuthRoutes } from './api/auth/auth.route';
-
-// admin
-import { getAdminModel } from './api/admin/admin.mongo';
-import { initAdminRoutes } from './api/admin/admin.route';
+import { initAuthRoutes } from './service/passport/auth.route';
+import { getAdminModel } from './service/passport/admin/admin.mongo';
 
 // company
 import { getCompanyModel } from './api/company/company.mongo';
 import { initCompanyRoutes } from './api/company/company.route';
-import { initCompanyChannel } from './api/company/company.ws';
+// import { initCompanyChannel } from './api/company/company.ws';
 
 // company types
 import { getCompanyTypeModel } from './api/companytype/companytype.mongo';
@@ -37,7 +34,7 @@ import { initUserRoutes } from './api/user/user.route';
  * @param {LoggerInstance} logger
  * @return {void}
  */
-function handleError(server: Server, logger: LoggerInstance) {
+function handleServerError(server: Server, logger: LoggerInstance) {
   server.on('error', (err: Error) => {
     if (err.syscall !== 'listen') {
       logger.error(err.message);
@@ -46,7 +43,7 @@ function handleError(server: Server, logger: LoggerInstance) {
 
     const bind = `Port ${env.port.default}`;
 
-    // $FlowFixMe
+    // $flowFixMe
     switch (err.code) {
       case 'EACCES':
         logger.error(`${bind} requires elevated privileges`);
@@ -64,11 +61,10 @@ function handleError(server: Server, logger: LoggerInstance) {
 }
 
 (async () => {
-  const logger = getLogger();
   try {
     // db connections
-    const redis = await initRedis(logger);
-    const mongodb = await initMongoose(logger);
+    // const redis = await initRedis(LOGGER);
+    const mongodb = await initMongoose();
 
     // mongoose models
     const AdminModel = getAdminModel(mongodb);
@@ -77,28 +73,30 @@ function handleError(server: Server, logger: LoggerInstance) {
     const CompanyModel = getCompanyModel(mongodb, UserModel, CompanyTypeModel);
 
     // express routes
-    const routes: Router[] = [
-      initAuthRoutes(UserModel, AdminModel),
-      initAdminRoutes(AdminModel),
-      initUserRoutes(UserModel),
-      initCompanyTypeRoutes(CompanyTypeModel),
-      initCompanyRoutes(CompanyModel)
-    ];
+    const appRoutes: AppRoutes = {
+      auth: [initAuthRoutes(UserModel, AdminModel)],
+      api: [
+        initUserRoutes(UserModel),
+        initCompanyTypeRoutes(CompanyTypeModel),
+        initCompanyRoutes(CompanyModel)
+      ]
+    };
 
     // express app
-    const app = initApp(routes, UserModel, AdminModel);
+    const app = initApp(appRoutes, UserModel, AdminModel);
     app.set('env', env.nodeEnv);
     const server = http.createServer(app).listen(env.port.default);
     // const httpsServer = https.createServer(app).listen(env.port.https);
-    initWebsocket(server, redis, [initCompanyChannel], logger);
+    //
+    // initWebsocket(server, redis, [initCompanyChannel], LOGGER);
 
-    handleError(server, logger);
+    handleServerError(server, LOGGER);
 
     const cleanExit = () => {
-      logger.log('info', 'Server is down');
-      if (env.nodeEnv === 'production') {
-        redis.quit().then(() => process.exit(0));
-      }
+      LOGGER.log('info', 'Server is down');
+      // if (env.nodeEnv === 'production') {
+      // redis.quit().then(() => process.exit(0));
+      // }
     };
 
     process.once('SIGINT', cleanExit);
@@ -108,10 +106,9 @@ function handleError(server: Server, logger: LoggerInstance) {
       const addr = server.address();
       const bind =
         typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
-      logger.info(`Server Listening on ${bind}`);
+      LOGGER.info(`Server Listening on ${bind}`);
     });
   } catch (err) {
-    logger.log('error', err);
-    throw err;
+    LOGGER.log('error', err);
   }
 })();

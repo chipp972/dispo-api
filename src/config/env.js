@@ -12,12 +12,15 @@ export default {
     https: process.env.HTTPS_PORT || 443
   },
   auth: {
+    isAuthenticationActivated: process.env.IS_AUTHENTICATION_ACTIVATED
+      ? process.env.IS_AUTHENTICATION_ACTIVATED === 1
+      : true,
     secretOrKey: process.env.AUTH_SECRET_OR_KEY || 'space_cat',
-    sessionExpiration: process.env.TOKEN_EXPIRATION || 86400,
+    sessionExpiration: process.env.SESSION_EXPIRATION || 86400,
     saltRounds: process.env.SALT_ROUNDS || 12,
     admin: {
       validDuration: process.env.ADMIN_CODE_VALID_DURATION || 300,
-      sessionExpiration: process.env.ADMIN_TOKEN_EXPIRATION || 2700
+      sessionExpiration: process.env.ADMIN_SESSION_EXPIRATION || 2700
     }
   },
   queue: {

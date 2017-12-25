@@ -1,20 +1,21 @@
 // @flow
 import { Router, Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { sendPasswordlessAuthMail } from '../../service/mail/smtp';
-import { formatResponse } from '../../service/express/utils.route';
-import env from '../../config/env';
+import { sendPasswordlessAuthMail } from '../../../service/mail/smtp';
+import { formatResponse } from '../../../service/express/utils.route';
+import env from '../../../config/env';
 import { generate } from 'shortid';
 import moment from 'moment-timezone';
+import { passportRoutes } from '../passport.route';
 import type { Model } from 'mongoose';
-import type { AuthResponse, PasswordLessStartRes } from './auth';
+import type { AuthResponse, PasswordLessStartResponse } from './admin';
 
 moment.locale('fr');
 
 export function initAdminAuthRoutes(UserModel: Model, AdminUserModel: Model) {
   const router = Router();
   router.post(
-    '/admin/auth/start',
+    passportRoutes.admin.authStart.path,
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const { email } = req.body;
@@ -33,7 +34,7 @@ export function initAdminAuthRoutes(UserModel: Model, AdminUserModel: Model) {
         return formatResponse(
           res,
           200,
-          ({ email: admin.email }: PasswordLessStartRes)
+          ({ email: admin.email }: PasswordLessStartResponse)
         );
       } catch (err) {
         // catch invalid mail recipient or format errors
@@ -43,7 +44,7 @@ export function initAdminAuthRoutes(UserModel: Model, AdminUserModel: Model) {
   );
 
   router.post(
-    '/admin/auth/authenticate',
+    passportRoutes.admin.authenticate.path,
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const { email, code } = req.body;

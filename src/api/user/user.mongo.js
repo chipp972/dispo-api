@@ -27,7 +27,6 @@ export const getUserModel = (dbConnection: Connection): Model<User> => {
   const preSaveChecks = async function(next) {
     try {
       const user: User = this || {};
-      // hash password
       const hash = await hashPassword(user.password);
       user.password = hash;
       return next();

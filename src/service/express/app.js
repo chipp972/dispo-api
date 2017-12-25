@@ -1,18 +1,19 @@
 // @flow
-import express, { Router, Application } from 'express';
+import express, { Application } from 'express';
 import { Model } from 'mongoose';
 import applyMiddlewares from './middlewares';
 import { initRoutes } from './routes';
+import type { AppRoutes } from './routes';
 
 /**
  * Initialize the application
- * @param {Router[]} routes
+ * @param {AppRoutes} appRoutes
  * @param {Model} UserModel
  * @param {Model} AdminModel
  * @return {Application}
  */
 export default function initApp(
-  routes: Router[],
+  appRoutes: AppRoutes,
   UserModel: Model,
   AdminModel: Model
 ): Application {
@@ -23,7 +24,7 @@ export default function initApp(
     applyMiddlewares(app, UserModel, AdminModel);
 
     /* routes */
-    app.use(initRoutes(routes));
+    initRoutes(app, appRoutes);
 
     return app;
   } catch (err) {

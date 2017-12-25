@@ -1,17 +1,22 @@
 // @flow
+import { Response } from 'express';
+import { passportRoutes } from '../src/service/passport/passport.route';
 import type {
   Company as Comp,
   CompanyData as CompData
-} from '../src/api/company/company.type';
-import type { User as U, UserData as UData } from '../src/api/user/user.type';
+} from '../src/api/company/company.js.flow';
+import type {
+  User as U,
+  UserData as UData
+} from '../src/api/user/user.js.flow';
 import type {
   CompanyType as CompType,
   CompanyTypeData as CompTypeData
-} from '../src/api/companytype/companytype.type';
+} from '../src/api/companytype/companytype.js.flow';
 import type {
   AuthResponse,
   PasswordLessStartResponse
-} from '../src/api/auth/auth.type';
+} from '../src/service/passport/admin/admin';
 
 export type FetchFunction = Function;
 
@@ -103,15 +108,17 @@ export function fetchBasic(fetchFunction: FetchFunction, baseUrl: string) {
       return fetchFunction(`${baseUrl}${path}`, {
         method,
         headers: {
-          "Accept": 'application/json',
+          Accept: 'application/json',
           'Content-Type': 'application/json',
           ...headers
         },
         body: JSON.stringify(data)
       })
-        .then((res) => res.json())
-        .then((res) => (res.success ? resolve(res.data) : reject(res)))
-        .catch((err) => reject(err));
+        .then((res: Response) => res.json())
+        .then(
+          (res: Response) => (res.success ? resolve(res.data) : reject(res))
+        )
+        .catch((err: Error) => reject(err));
     });
 }
 
@@ -128,8 +135,8 @@ export const fetchWithToken = (
       data,
       headers: { ...headers, authorization: token }
     })
-      .then((res) => resolve(res))
-      .catch((err) => reject(err));
+      .then((res: Response) => resolve(res))
+      .catch((err: Error) => reject(err));
   });
 
 export const authAPI = (fetchFunction: FetchFunction, url: string): AuthAPI => {
@@ -137,12 +144,20 @@ export const authAPI = (fetchFunction: FetchFunction, url: string): AuthAPI => {
   return {
     admin: {
       sendCode: (data: { email: string }): Promise<PasswordLessStartRes> =>
-        getAPIData({ method: 'POST', path: '/admin/auth/start', data }),
+        getAPIData({
+          method: passportRoutes.admin.authStart.method,
+          path: '/auth' + passportRoutes.admin.authStart.path,
+          data
+        }),
       authenticate: (data: {
         email: string,
         code: string
       }): Promise<AuthResponse> =>
-        getAPIData({ method: 'POST', path: '/admin/auth/authenticate', data })
+        getAPIData({
+          method: passportRoutes.admin.authenticate.method,
+          path: '/auth' + passportRoutes.admin.authenticate.path,
+          data
+        })
     },
     user: {
       facebookAuth: undefined,
@@ -157,8 +172,8 @@ export const dataAPI = (fetchFunction: FetchFunction, url: string) => (
 ): DataAPI => {
   const getAPIData = fetchWithToken(fetchFunction, url, token);
   return {
-    company: generateCrudOperations(getAPIData, '/company'),
-    user: generateCrudOperations(getAPIData, '/user'),
-    companyType: generateCrudOperations(getAPIData, '/companytype')
+    company: generateCrudOperations(getAPIData, '/api/company'),
+    user: generateCrudOperations(getAPIData, '/api/user'),
+    companyType: generateCrudOperations(getAPIData, '/api/companytype')
   };
 };

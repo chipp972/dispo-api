@@ -2,7 +2,7 @@
 import { Logger, LoggerInstance, transports } from 'winston';
 import env from './env';
 
-const logger: LoggerInstance = new Logger({
+const LOGGER: LoggerInstance = new Logger({
   exitOnError: true,
   transports: [
     new transports.Console({
@@ -14,6 +14,4 @@ const logger: LoggerInstance = new Logger({
   ]
 });
 
-export default function getLogger(): LoggerInstance {
-  return logger;
-}
+export default LOGGER;

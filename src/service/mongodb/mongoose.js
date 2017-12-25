@@ -1,12 +1,10 @@
 // @flow
 import mongoose, { ConnectionOptions, Connection } from 'mongoose';
 import { Mockgoose } from 'mockgoose';
-import { LoggerInstance } from 'winston';
+import LOGGER from '../../config/logger';
 import env from '../../config/env';
 
-export default async function initMongoose(
-  logger: LoggerInstance
-): Promise<Connection> {
+export const initMongoose = async (): Promise<Connection> => {
   (mongoose: any).Promise = global.Promise;
 
   const options: ConnectionOptions = {
@@ -21,7 +19,7 @@ export default async function initMongoose(
     // try to create a connection object
     mongoose
       .createConnection(env.database.mongodbUri, options)
-      .then(db => resolve(db))
+      .then((db: Connection) => resolve(db))
       .catch((err: Error) => {
         if (env.nodeEnv === 'production') {
           reject(new Error(`mongoose connection ${err.message}`));
@@ -29,14 +27,14 @@ export default async function initMongoose(
         // Use mockgoose to mock the data store
         const mockgoose: Mockgoose = new Mockgoose(mongoose);
         mockgoose.prepareStorage().then(() => {
-          logger.log('Using Mockgoose');
+          LOGGER.log('Using Mockgoose');
           mongoose
             .createConnection(env.database.mongodbUri, options)
-            .then(db => resolve(db))
+            .then((db: Connection) => resolve(db))
             .catch((err2: Error) =>
               reject(new Error(`mockgoose connection ${err2.message}`))
             );
         });
       });
   });
-}
+};
