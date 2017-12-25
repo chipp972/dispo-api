@@ -1,6 +1,5 @@
 // @flow
 import { Response } from 'express';
-import { passportRoutes } from '../src/service/passport/passport.route';
 import type {
   Company as Comp,
   CompanyData as CompData
@@ -145,8 +144,8 @@ export const authAPI = (fetchFunction: FetchFunction, url: string): AuthAPI => {
     admin: {
       sendCode: (data: { email: string }): Promise<PasswordLessStartRes> =>
         getAPIData({
-          method: passportRoutes.admin.authStart.method,
-          path: '/auth' + passportRoutes.admin.authStart.path,
+          method: 'POST',
+          path: '/auth/admin/start',
           data
         }),
       authenticate: (data: {
@@ -154,8 +153,8 @@ export const authAPI = (fetchFunction: FetchFunction, url: string): AuthAPI => {
         code: string
       }): Promise<AuthResponse> =>
         getAPIData({
-          method: passportRoutes.admin.authenticate.method,
-          path: '/auth' + passportRoutes.admin.authenticate.path,
+          method: 'POST',
+          path: '/auth/admin/authenticate',
           data
         })
     },
