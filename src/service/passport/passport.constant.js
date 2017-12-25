@@ -2,12 +2,16 @@
 
 export const passportRoutes = {
   admin: {
-    authStart: {
+    sendCode: {
       path: '/admin/start',
       method: 'POST'
     },
     authenticate: {
       path: '/admin/authenticate',
+      method: 'POST'
+    },
+    logout: {
+      path: '/admin/logout',
       method: 'POST'
     }
   }

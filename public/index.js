@@ -153,6 +153,11 @@ export const authAPI = (fetchFunction: FetchFunction, url: string): AuthAPI => {
           method: 'POST',
           path: '/auth/admin/authenticate',
           data
+        }),
+      logout: (): Promise<{ success: boolean }> =>
+        getAPIData({
+          method: 'POST',
+          path: '/auth/admin/logout'
         })
     },
     user: {

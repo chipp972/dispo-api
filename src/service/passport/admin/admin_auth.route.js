@@ -6,7 +6,7 @@ import { formatResponse } from '../../../service/express/utils.route';
 import env from '../../../config/env';
 import { generate } from 'shortid';
 import moment from 'moment-timezone';
-import { passportRoutes } from '../passport.route';
+import { passportRoutes } from '../passport.constant';
 import type { Model } from 'mongoose';
 import type { AuthResponse, PasswordLessStartResponse } from './admin';
 
@@ -15,13 +15,13 @@ moment.locale('fr');
 export function initAdminAuthRoutes(UserModel: Model, AdminUserModel: Model) {
   const router = Router();
   router.post(
-    passportRoutes.admin.authStart.path,
+    passportRoutes.admin.sendCode.path,
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const { email } = req.body;
         const code: string = generate();
         const limitDate = moment().add(env.auth.admin.validDuration, 'seconds');
-        await AdminUserModel.remove({ email });
+        await AdminUserModel.remove({ email }); // clear all admin sessions
         await sendPasswordlessAuthMail(
           code,
           limitDate.tz('Europe/Paris').format('LT')
@@ -43,9 +43,12 @@ export function initAdminAuthRoutes(UserModel: Model, AdminUserModel: Model) {
     }
   );
 
-  router.post(
-    passportRoutes.admin.authenticate.path,
-    async (req: Request, res: Response, next: NextFunction) => {
+  const handleUnauthorized = (req: Request, res: Response) =>
+    formatResponse(res, 403, { message: 'unauthorized' });
+
+  router
+    .route(passportRoutes.admin.authenticate.path)
+    .post(async (req: Request, res: Response, next: NextFunction) => {
       try {
         const { email, code } = req.body;
         const expireAt = moment().add(
@@ -57,9 +60,7 @@ export function initAdminAuthRoutes(UserModel: Model, AdminUserModel: Model) {
           { email, code },
           { $set: { expireAt } }
         );
-        if (!admin) {
-          return formatResponse(res, 403, { message: 'unauthorized' });
-        }
+        if (!admin) return next();
         const token = jwt.sign(admin.toJSON(), env.auth.secretOrKey);
         return formatResponse(
           res,
@@ -67,14 +68,26 @@ export function initAdminAuthRoutes(UserModel: Model, AdminUserModel: Model) {
           ({
             tokenId: admin._id,
             token,
-            expireAt: expireAt.format()
+            expireAt: expireAt.unix()
           }: AuthResponse)
         );
       } catch (err) {
         next(err);
       }
-    }
-  );
+    })
+    .post(handleUnauthorized);
+
+  router
+    .route(passportRoutes.admin.logout.path)
+    .post(async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const { tokenId } = req.body;
+        await AdminUserModel.remove({ _id: tokenId }); // clear all admin sessions
+        return formatResponse(res, 204);
+      } catch (err) {
+        next(err);
+      }
+    });
 
   return router;
 }
