@@ -1,5 +1,4 @@
 // @flow
-import { Response } from 'express';
 import type {
   Company as Comp,
   CompanyData as CompData
@@ -15,7 +14,7 @@ import type {
 import type {
   AuthResponse,
   PasswordLessStartResponse
-} from '../src/service/passport/admin/admin';
+} from '../src/service/passport/admin/admin.js.flow';
 
 export type FetchFunction = Function;
 
@@ -113,10 +112,8 @@ export function fetchBasic(fetchFunction: FetchFunction, baseUrl: string) {
         },
         body: JSON.stringify(data)
       })
-        .then((res: Response) => res.json())
-        .then(
-          (res: Response) => (res.success ? resolve(res.data) : reject(res))
-        )
+        .then(res => res.json())
+        .then(res => (res.success ? resolve(res.data) : reject(res)))
         .catch((err: Error) => reject(err));
     });
 }
@@ -134,7 +131,7 @@ export const fetchWithToken = (
       data,
       headers: { ...headers, authorization: token }
     })
-      .then((res: Response) => resolve(res))
+      .then(res => resolve(res))
       .catch((err: Error) => reject(err));
   });
 
