@@ -44,7 +44,7 @@ export function initAdminAuthRoutes(UserModel: Model, AdminUserModel: Model) {
   );
 
   const handleUnauthorized = (req: Request, res: Response) =>
-    formatResponse(res, 403, { message: 'unauthorized' });
+    formatResponse(res, 403, { message: 'unauthorized access' });
 
   router
     .route(passportRoutes.admin.authenticate.path)
@@ -82,8 +82,8 @@ export function initAdminAuthRoutes(UserModel: Model, AdminUserModel: Model) {
     .post(async (req: Request, res: Response, next: NextFunction) => {
       try {
         const { tokenId } = req.body;
-        await AdminUserModel.remove({ _id: tokenId }); // clear all admin sessions
-        return formatResponse(res, 204);
+        await AdminUserModel.findByIdAndRemove(tokenId);
+        return formatResponse(res, 200, {});
       } catch (err) {
         next(err);
       }
