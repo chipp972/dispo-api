@@ -17,6 +17,7 @@ import type {
   AuthResponse,
   PasswordLessStartResponse
 } from '../src/service/passport/admin/admin';
+import { EVENTS } from '../src/service/websocket/websocket.event';
 
 export type FetchFunction = Function;
 

@@ -1,0 +1,37 @@
+// @flow
+import { Model } from 'mongoose';
+import { Request, Response, NextFunction } from 'express';
+
+export type ReqUser = { _id: string, role?: string };
+
+export type CrudOptions = {
+  id?: string,
+  data?: any,
+  user?: ReqUser
+};
+
+export type CrudOperation = CrudOptions => Promise<any>;
+
+export type CrudOperations = {
+  getAll: () => Promise<any[]>,
+  getById: ({ id: string }) => Promise<any>,
+  create: ({ data: any }) => Promise<any>,
+  edit: ({ id: string, data: any, user: ReqUser }) => Promise<any>,
+  remove: ({ id: string, user: ReqUser }) => Promise<any>
+};
+
+export type MongooseCrudGenerator = (model: Model) => CrudOperations;
+
+export type Middleware = (
+  req: Request,
+  res: Response,
+  next?: NextFunction
+) => any;
+
+export type RouteHooks = {
+  get: Middleware,
+  getAll: Middleware,
+  create: Middleware,
+  edit: Middleware,
+  remove: Middleware
+};

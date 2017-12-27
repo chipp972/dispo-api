@@ -1,20 +1,12 @@
 // @flow
 import { Request, Response, NextFunction, Router } from 'express';
-import type { CrudOperation, CrudOperations, CrudOptions } from './mongodb';
-
-export type Middleware = (
-  req: Request,
-  res: Response,
-  next?: NextFunction
-) => any;
-
-export type RouteHooks = {
-  get: Middleware,
-  getAll: Middleware,
-  create: Middleware,
-  edit: Middleware,
-  remove: Middleware
-};
+import type {
+  CrudOperation,
+  CrudOperations,
+  CrudOptions,
+  Middleware,
+  RouteHooks
+} from './crud';
 
 export const errorHandlerWrapper = (middleware: Middleware) => (
   req: Request,
@@ -42,20 +34,25 @@ export const defaultResponseFormatter = (req: Request, res: Response): void =>
  */
 export const generateRoute = ({
   operation,
-  status
+  status,
+  before = () => undefined,
+  after = () => undefined
 }: {
   operation: CrudOperation,
-  status: number
+  status: number,
+  before: Middleware,
+  after: Middleware
 }) =>
   errorHandlerWrapper(
     async (req: Request, res: Response, next: NextFunction) => {
       const options: CrudOptions = {
         id: req.params.id || '',
-        data: req.body,
-        user: req.user || { _id: '' }
+        data: req.body
       };
+      errorHandlerWrapper(before)(req, res, next);
       res.data = await operation(options);
       res.status(status);
+      errorHandlerWrapper(after)(req, res, next);
       next();
     }
   );
@@ -65,31 +62,28 @@ export const generateRoute = ({
  * @param {CrudOperations} operations
  * @return {Router}
  */
-export const generateCrudRoutes = <T1, T2>({
+export const generateCrudRoutes = ({
   operations,
   responseFormatter,
-  beforeAll,
-  afterAll,
-  before,
-  after
+  before = {},
+  after = {}
 }: {
-  operations: CrudOperations<T1, T2>,
+  operations: CrudOperations,
   responseFormatter?: Middleware,
-  beforeAll?: Middleware[],
-  afterAll?: Middleware[],
-  before?: RouteHooks,
-  after?: RouteHooks
+  before: RouteHooks | Object,
+  after: RouteHooks | Object
 }): Router => {
   const router = Router();
   const formatResponse = responseFormatter || defaultResponseFormatter;
 
-  beforeAll.forEach((mw: Middleware) => router.use('/*', mw));
-
-  router
-    .route('/')
-    .get(before.getAll)
-    .get(generateRoute({ operation: operations.getAll, status: 200 }))
-    .get(after.getAll);
+  router.route('/').get(
+    generateRoute({
+      operation: operations.getAll,
+      status: 200,
+      before: before.getAll,
+      after: after.getAll
+    })
+  );
 
   router
     .route('/')
@@ -103,8 +97,6 @@ export const generateCrudRoutes = <T1, T2>({
     .put(generateRoute({ operation: operations.edit, status: 200 }))
     .patch(generateRoute({ operation: operations.edit, status: 200 }))
     .delete(generateRoute({ operation: operations.remove, status: 200 }));
-
-  afterAll.forEach((mw: Middleware) => router.use('/*', mw));
 
   router.use('*', formatResponse);
 

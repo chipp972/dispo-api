@@ -6,7 +6,7 @@ import type { AppRoutes } from './service/express/routes';
 import initApp from './service/express/app';
 // import initRedis from './service/redis/redis';
 import { initMongoose } from './service/mongodb/mongoose';
-// import initWebsocket from './service/websocket/websocket';
+import { initWebsocket } from './service/websocket/websocket';
 import { LoggerInstance } from 'winston';
 import LOGGER from './config/logger';
 import env from './config/env';
@@ -88,7 +88,7 @@ function handleServerError(server: Server, logger: LoggerInstance) {
     const server = http.createServer(app).listen(env.port.default);
     // const httpsServer = https.createServer(app).listen(env.port.https);
     //
-    // initWebsocket(server, redis, [initCompanyChannel], LOGGER);
+    initWebsocket(server);
 
     handleServerError(server, LOGGER);
 

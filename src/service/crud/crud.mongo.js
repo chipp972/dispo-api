@@ -1,6 +1,6 @@
 // @flow
 import { Model } from 'mongoose';
-import type { ReqUser, CrudOperations, MongooseCrudGenerator } from './mongodb';
+import type { ReqUser, CrudOperations, MongooseCrudGenerator } from './crud';
 
 export const isUserAuthorized = (obj: any, user: ReqUser): boolean =>
   user.role === 'admin' || obj.owner === user._id;
@@ -10,61 +10,32 @@ export const isUserAuthorized = (obj: any, user: ReqUser): boolean =>
  * @param {Model} model
  * @return {CrudOperations}
  */
-export const generateCrudOperations: MongooseCrudGenerator<*, *> = <
-  ModelT,
-  DataT
->(
+export const generateCrudOperations: MongooseCrudGenerator = (
   model: Model
-): CrudOperations<ModelT, DataT> => ({
-  getAll: async (): Promise<ModelT[]> => {
-    try {
-      const objList = await model.find({});
-      return objList;
-    } catch (err) {
-      throw err;
-    }
+): CrudOperations => ({
+  getAll: async (): Promise<any[]> => {
+    const objList = await model.find({});
+    return objList;
   },
-  getById: async ({ id }): Promise<ModelT> => {
-    try {
-      const obj = await model.findById(id);
-      return obj;
-    } catch (err) {
-      throw err;
-    }
+  getById: async ({ id }): Promise<*> => {
+    const obj = await model.findById(id);
+    return obj;
   },
-  create: async ({ data }): Promise<ModelT> => {
-    try {
-      const obj = await model.create(data);
-      return obj;
-    } catch (err) {
-      throw err;
-    }
+  create: async ({ data }): Promise<*> => {
+    const obj = await model.create(data);
+    return obj;
   },
-  edit: async ({ id, data, user }): Promise<ModelT> => {
-    try {
-      const obj = await model.findById(id);
-      if (!isUserAuthorized(obj, user)) {
-        throw new Error('unauthorized operation');
-      }
-      delete data._id;
-      delete data.__v;
-      const newObj = { ...obj, data };
-      await newObj.save();
-      return newObj;
-    } catch (err) {
-      throw err;
-    }
+  edit: async ({ id, data }): Promise<*> => {
+    const obj = await model.findById(id);
+    delete data._id;
+    delete data.__v;
+    const newObj = Object.assign(obj, data);
+    await newObj.save();
+    return newObj;
   },
-  remove: async ({ id, user }): Promise<ModelT> => {
-    try {
-      const obj = await model.findById(id);
-      if (!isUserAuthorized(obj, user)) {
-        throw new Error('unauthorized operation');
-      }
-      await obj.remove();
-      return obj;
-    } catch (err) {
-      throw err;
-    }
+  remove: async ({ id }): Promise<*> => {
+    const obj = await model.findById(id);
+    await obj.remove();
+    return obj;
   }
 });
