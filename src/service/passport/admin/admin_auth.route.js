@@ -67,7 +67,7 @@ export function initAdminAuthRoutes(UserModel: Model, AdminUserModel: Model) {
           ({
             tokenId: admin._id,
             token,
-            expireAt: expireAt.format()
+            expireAt: expireAt.unix()
           }: AuthResponse)
         );
       } catch (err) {

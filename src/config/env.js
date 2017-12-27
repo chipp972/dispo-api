@@ -13,7 +13,7 @@ export default {
   },
   auth: {
     isAuthenticationActivated: process.env.IS_AUTHENTICATION_ACTIVATED
-      ? process.env.IS_AUTHENTICATION_ACTIVATED === 1
+      ? process.env.IS_AUTHENTICATION_ACTIVATED === '1'
       : true,
     secretOrKey: process.env.AUTH_SECRET_OR_KEY || 'space_cat',
     sessionExpiration: process.env.SESSION_EXPIRATION || 86400,

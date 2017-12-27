@@ -61,6 +61,7 @@
     "prettier": "1.8.2",
     "request": "^2.81.0",
     "sinon": "4.1.2",
+    "supertest": "3.0.0",
     "tape": "^4.7.0",
     "tape-watch": "2.3.0"
   },

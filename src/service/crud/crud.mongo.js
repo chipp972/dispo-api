@@ -48,8 +48,7 @@ export const generateCrudOperations: MongooseCrudGenerator<*, *> = <
       }
       delete data._id;
       delete data.__v;
-      data.unknwownFiel = 'hahaha';
-      const newObj = Object.assign(obj, data);
+      const newObj = { ...obj, data };
       await newObj.save();
       return newObj;
     } catch (err) {
