@@ -1,19 +1,18 @@
 // @flow
 import { Document } from 'mongoose';
-import type { ScheduleWeek } from '../schedule/schedule';
 
-export interface CompanyData {
-  owner: string;
-  name: string;
-  type: string;
-  siret?: string;
-  imageUrl?: string;
-  address: string;
-  phoneNumber?: string;
-  schedule?: ScheduleWeek;
-}
+export type CompanyData = {
+  owner: string,
+  name: string,
+  type: string,
+  siret?: string,
+  imageUrl?: string,
+  address: string,
+  phoneNumber?: string
+};
 
 export interface Company extends CompanyData, Document {
   _id: string;
   geoAddress: { lat: number, lng: number };
+  recentlyAvailable: Date;
 }

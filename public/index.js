@@ -173,7 +173,15 @@ export const dataAPI = (fetchFunction: FetchFunction, url: string) => (
 ): DataAPI => {
   const getAPIData = fetchWithToken(fetchFunction, url, token);
   return {
-    company: generateCrudOperations(getAPIData, '/api/company'),
+    company: {
+      ...generateCrudOperations(getAPIData, '/api/company'),
+      refreshDispo: (companyId: string) =>
+        getAPIData({
+          path: `/api/company/${companyId}`,
+          method: 'PATCH',
+          data: {}
+        })
+    },
     user: generateCrudOperations(getAPIData, '/api/user'),
     companyType: generateCrudOperations(getAPIData, '/api/companytype')
   };

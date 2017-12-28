@@ -7,7 +7,7 @@ export const getCompanyModel = (
   dbConnection: Connection,
   UserModel: Model,
   CompanyTypeModel: Model
-): Model<Company> => {
+): Model => {
   const GeocodeSchema = new Schema({
     lat: { type: Number, required: true },
     lng: { type: Number, required: true }
@@ -34,21 +34,23 @@ export const getCompanyModel = (
     },
     address: { type: String, required: true, trim: true },
     geoAddress: GeocodeSchema,
-    phoneNumber: String
+    phoneNumber: String,
+    lastUpdate: Date // use this field to determine if company is available
   });
 
   const preSaveChecks = async function(next) {
     try {
       const company: Company = this || {};
+      company.lastUpdate = new Date();
       // update geocode location
       const geoLocation = await mapUtil.getGeocode(company.address);
       company.geoAddress = geoLocation;
       // check owner
       const user = await UserModel.findById(company.owner);
-      if (!user) return next(new Error('owner id is invalid'));
+      if (!user) return next(new Error('invalid company owner'));
       // check company type
       const companytype = await CompanyTypeModel.findById(company.type);
-      if (!companytype) return next(new Error('type id is invalid'));
+      if (!companytype) return next(new Error('invalid company type'));
       return next();
     } catch (err) {
       return next(err);
