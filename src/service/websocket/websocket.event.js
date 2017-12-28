@@ -2,9 +2,7 @@
 
 export const EVENTS = {
   COMPANY: {
-    available: 'COMPANY_AVAILABLE',
-    unavailable: 'COMPANY_UNAVAILABLE',
-    selected: 'COMPANY_SELECTED',
+    clicked: 'COMPANY_CLICKED',
     created: 'COMPANY_CREATED',
     updated: 'COMPANY_UPDATED',
     deleted: 'COMPANY_DELETED'

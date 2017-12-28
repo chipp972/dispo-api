@@ -17,6 +17,7 @@ import type {
   AuthResponse,
   PasswordLessStartResponse
 } from '../src/service/passport/admin/admin';
+import io from 'socket.io-client';
 import { EVENTS } from '../src/service/websocket/websocket.event';
 
 export type FetchFunction = Function;
@@ -188,5 +189,19 @@ export const dataAPI = (fetchFunction: FetchFunction, url: string) => (
       getAPIData,
       '/api/companypopularity'
     )
+  };
+};
+
+export const socketAPI = (url: string, token: string) => {
+  const socket = io(url, {
+    query: {
+      token
+    }
+  });
+  return {
+    onCompanyCreated: (cb: Function) => socket.on(EVENTS.COMPANY.created, cb),
+    onCompanyUpdated: (cb: Function) => socket.on(EVENTS.COMPANY.updated, cb),
+    onCompanyDeleted: (cb: Function) => socket.on(EVENTS.COMPANY.deleted, cb),
+    onCompanyClicked: (cb: Function) => socket.on(EVENTS.COMPANY.clicked, cb)
   };
 };

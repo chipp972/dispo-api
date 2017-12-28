@@ -1,15 +1,18 @@
 // @flow
 import http, { Server } from 'http';
+import EventEmitter from 'events';
 // import https from 'https';
 
 import initApp from './service/express/app';
 // import initRedis from './service/redis/redis';
 import { initMongoose } from './service/mongodb/mongoose';
-import { initWebsocket } from './service/websocket/websocket';
 import { LoggerInstance } from 'winston';
 import LOGGER from './config/logger';
 import env from './config/env';
 import { crud } from './service/crud/crud';
+
+import { initWebsocket } from './service/websocket/websocket';
+import { EVENTS } from './service/websocket/websocket.event';
 
 // auth
 import { getAdminModel } from './service/passport/admin/admin.mongo';
@@ -59,6 +62,9 @@ function handleServerError(server: Server, logger: LoggerInstance) {
 
 (async () => {
   try {
+    // event emitters
+    const apiEvents = new EventEmitter();
+
     // db connections
     // const redis = await initRedis(LOGGER);
     const mongodb = await initMongoose();
@@ -67,7 +73,12 @@ function handleServerError(server: Server, logger: LoggerInstance) {
     const AdminModel = getAdminModel(mongodb);
     const CompanyTypeModel = getCompanyTypeModel(mongodb);
     const UserModel = getUserModel(mongodb);
-    const CompanyModel = getCompanyModel(mongodb, UserModel, CompanyTypeModel);
+    const CompanyModel = getCompanyModel(
+      mongodb,
+      UserModel,
+      CompanyTypeModel,
+      (company: any) => apiEvents.emit(EVENTS.COMPANY.deleted, company)
+    );
     const CompanyPopularityModel = getCompanyPopularityModel(
       mongodb,
       CompanyModel,
@@ -82,9 +93,9 @@ function handleServerError(server: Server, logger: LoggerInstance) {
         crud({
           path: '/companytype',
           model: CompanyTypeModel,
-          // delete associated companies
           after: {
             delete: async (result: any, req: Request, res: Response) => {
+              // delete associated companies
               await CompanyModel.remove({ type: result._id });
               return result;
             }
@@ -92,11 +103,33 @@ function handleServerError(server: Server, logger: LoggerInstance) {
         }),
         crud({
           path: '/company',
-          model: CompanyModel
+          model: CompanyModel,
+          after: {
+            create: async (result: any, req: Request, res: Response) => {
+              apiEvents.emit(EVENTS.COMPANY.created, result);
+              return result;
+            },
+            update: async (result: any, req: Request, res: Response) => {
+              apiEvents.emit(EVENTS.COMPANY.updated, result);
+              await CompanyModel.remove({ type: result._id });
+              return result;
+            },
+            delete: async (result: any, req: Request, res: Response) => {
+              apiEvents.emit(EVENTS.COMPANY.deleted, result);
+              await CompanyPopularityModel.remove({ companyId: result._id });
+              return result;
+            }
+          }
         }),
         crud({
           path: '/companypopularity',
-          model: CompanyPopularityModel
+          model: CompanyPopularityModel,
+          after: {
+            create: async (result: any, req: Request, res: Response) => {
+              apiEvents.emit(EVENTS.COMPANY.clicked, result);
+              return result;
+            }
+          }
         })
       ]
     };
@@ -105,9 +138,13 @@ function handleServerError(server: Server, logger: LoggerInstance) {
     const app = initApp(appRoutes, UserModel, AdminModel);
     app.set('env', env.nodeEnv);
     const server = http.createServer(app).listen(env.port.default);
-    // const httpsServer = https.createServer(app).listen(env.port.https);
 
-    initWebsocket(server);
+    initWebsocket({
+      server,
+      apiEvents,
+      UserModel,
+      AdminModel
+    });
 
     handleServerError(server, LOGGER);
 
