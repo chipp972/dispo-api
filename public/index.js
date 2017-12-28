@@ -183,6 +183,10 @@ export const dataAPI = (fetchFunction: FetchFunction, url: string) => (
         })
     },
     user: generateCrudOperations(getAPIData, '/api/user'),
-    companyType: generateCrudOperations(getAPIData, '/api/companytype')
+    companyType: generateCrudOperations(getAPIData, '/api/companytype'),
+    companyPopularity: generateCrudOperations(
+      getAPIData,
+      '/api/companypopularity'
+    )
   };
 };

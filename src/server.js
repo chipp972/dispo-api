@@ -18,6 +18,7 @@ import { initAuthRoutes } from './service/passport/auth.route';
 // api
 import { getCompanyModel } from './api/company/company.mongo';
 import { getCompanyTypeModel } from './api/companytype/companytype.mongo';
+import { getCompanyPopularityModel } from './api/companypopularity/companypopularity.mongo';
 import { getUserModel } from './api/user/user.mongo';
 import { userCrudRoute } from './api/user/user.route';
 
@@ -67,6 +68,11 @@ function handleServerError(server: Server, logger: LoggerInstance) {
     const CompanyTypeModel = getCompanyTypeModel(mongodb);
     const UserModel = getUserModel(mongodb);
     const CompanyModel = getCompanyModel(mongodb, UserModel, CompanyTypeModel);
+    const CompanyPopularityModel = getCompanyPopularityModel(
+      mongodb,
+      CompanyModel,
+      UserModel
+    );
 
     // express routes
     const appRoutes: AppRoutes = {
@@ -87,6 +93,10 @@ function handleServerError(server: Server, logger: LoggerInstance) {
         crud({
           path: '/company',
           model: CompanyModel
+        }),
+        crud({
+          path: '/companypopularity',
+          model: CompanyPopularityModel
         })
       ]
     };
