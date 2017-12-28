@@ -1,77 +1,58 @@
 // @flow
+import EventEmitter from 'events';
+import { Model } from 'mongoose';
+import jwt from 'jsonwebtoken';
 import io, { SocketIO } from 'socket.io';
-import Redis from 'ioredis';
 import { Server } from 'http';
-import { LoggerInstance } from 'winston';
+import { EVENTS } from './websocket.event';
+import LOGGER from '../../config/logger';
+import { forEachObjIndexed } from 'ramda';
+import env from '../../config/env';
 
-export type ChannelConfig = {
-  channelName: string,
-  actions: {
-    [actionName: string]: (data: any) => Promise<{}>
-  }
+export type WebsocketOptions = {
+  server: Server,
+  apiEvents: EventEmitter,
+  UserModel: Model,
+  AdminModel: Model
 };
 
-export type ChannelConfigFactory = (
-  socket: SocketIO.Socket,
-  databaseInstance: any
-) => ChannelConfig;
-
-/**
- * Initialize channel listeners for each actions defined in a channel config
- */
-function initChannel(
-  socket: SocketIO.Socket,
-  database: Redis.Redis,
-  channelConfig: ChannelConfig
-): void {
-  try {
-    socket.join(channelConfig.channelName);
-    Object.keys(channelConfig.actions).forEach((action: string) => {
-      socket.on(action, channelConfig.actions[action]);
-    });
-  } catch (err) {
-    throw new Error(`initChannel ${channelConfig.channelName}: ${err}`);
-  }
-}
-
-/**
- * Initialize an array of channels
- */
-function initChannels(
-  socket: SocketIO.Socket,
-  database: Redis.Redis,
-  channelConfigFactories: ChannelConfigFactory[]
-): void {
-  channelConfigFactories
-    .map((channelConfigFactory: ChannelConfigFactory) =>
-      channelConfigFactory(socket, database)
-    )
-    .forEach((channelConfig: ChannelConfig) =>
-      initChannel(socket, database, channelConfig)
-    );
-}
-
-export default function initWebsocket(
-  server: Server,
-  database: Redis.Redis,
-  channelConfigFactories: ChannelConfigFactory[],
-  logger: LoggerInstance
-): void {
+export const initWebsocket = ({
+  server,
+  apiEvents,
+  UserModel,
+  AdminModel
+}: WebsocketOptions): SocketIO.Server => {
   const ws: SocketIO.Server = io(server);
 
-  ws.on('connection', (socket: SocketIO.Socket) => {
-    logger.log('info', 'websocket:general', 'client connected');
+  // emit events to clients
+  const emitEvent = (key, event) =>
+    apiEvents.on(event, (data: any) => ws.emit(event, data));
+  forEachObjIndexed(emitEvent, EVENTS.COMPANY);
 
-    // channels initialisation
-    initChannels(socket, database, channelConfigFactories);
-
-    socket.on('error', (err: Error) =>
-      logger.log('error', 'websocket:general', err)
-    );
-    socket.on('close', () =>
-      logger.log('info', 'websocket:general', 'client disconnected')
-    );
+  // authentication middleware
+  ws.use((socket, next) => {
+    const token = socket.handshake.query.token;
+    jwt.verify(token, env.auth.secretOrKey, (jwtPayload: { role: string }) => {
+      const { _id, email, code, role } = jwtPayload;
+      console.log(jwtPayload, 'jwtttt');
+      // TODO: finish verification
+      return next();
+      return next(new Error('authentication error'));
+    });
   });
 
-  logger.log('info', 'websocket channels', 'initialized');
-}
+  ws.on('connection', (socket: SocketIO.Socket) => {
+    LOGGER.info('client connected');
+
+    socket.on('error', (err: Error) => LOGGER.error(err));
+    socket.on('close', () => LOGGER.info('client disconnected'));
+
+    // broadcast all company events when received
+    const broadcastEvent = (key, event) =>
+      socket.on(event, (data: any) => socket.broadcast.emit(event, data));
+
+    forEachObjIndexed(broadcastEvent, EVENTS.COMPANY);
+  });
+
+  return ws;
+};

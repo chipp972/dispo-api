@@ -14,7 +14,9 @@ import type {
 import type {
   AuthResponse,
   PasswordLessStartResponse
-} from '../src/service/passport/admin/admin.js.flow';
+} from '../src/service/passport/admin/admin';
+import io from 'socket.io-client';
+import { EVENTS } from '../src/service/websocket/websocket.event';
 
 export type FetchFunction = Function;
 
@@ -174,8 +176,34 @@ export const dataAPI = (fetchFunction: FetchFunction, url: string) => (
 ): DataAPI => {
   const getAPIData = fetchWithToken(fetchFunction, url, token);
   return {
-    company: generateCrudOperations(getAPIData, '/api/company'),
+    company: {
+      ...generateCrudOperations(getAPIData, '/api/company'),
+      refreshDispo: (companyId: string) =>
+        getAPIData({
+          path: `/api/company/${companyId}`,
+          method: 'PATCH',
+          data: {}
+        })
+    },
     user: generateCrudOperations(getAPIData, '/api/user'),
-    companyType: generateCrudOperations(getAPIData, '/api/companytype')
+    companyType: generateCrudOperations(getAPIData, '/api/companytype'),
+    companyPopularity: generateCrudOperations(
+      getAPIData,
+      '/api/companypopularity'
+    )
+  };
+};
+
+export const socketAPI = (url: string, token: string) => {
+  const socket = io(url, {
+    query: {
+      token
+    }
+  });
+  return {
+    onCompanyCreated: (cb: Function) => socket.on(EVENTS.COMPANY.created, cb),
+    onCompanyUpdated: (cb: Function) => socket.on(EVENTS.COMPANY.updated, cb),
+    onCompanyDeleted: (cb: Function) => socket.on(EVENTS.COMPANY.deleted, cb),
+    onCompanyClicked: (cb: Function) => socket.on(EVENTS.COMPANY.clicked, cb)
   };
 };

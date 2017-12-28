@@ -1,16 +1,14 @@
 // @flow
 import { Model, Schema, Connection } from 'mongoose';
 import { mapUtil } from '../../service/google/map.utils';
-import { WeekSchema } from '../schedule/schedule.mongo';
 import type { Company } from './company';
-import type { CompanyType } from '../companytype/companytype';
-import type { User } from '../user/user';
 
 export const getCompanyModel = (
   dbConnection: Connection,
-  UserModel: Model<User>,
-  CompanyTypeModel: Model<CompanyType>
-): Model<Company> => {
+  UserModel: Model,
+  CompanyTypeModel: Model,
+  emitRemove: Company => any
+): Model => {
   const GeocodeSchema = new Schema({
     lat: { type: Number, required: true },
     lng: { type: Number, required: true }
@@ -38,21 +36,22 @@ export const getCompanyModel = (
     address: { type: String, required: true, trim: true },
     geoAddress: GeocodeSchema,
     phoneNumber: String,
-    schedule: WeekSchema
+    lastUpdate: Date // use this field to determine if company is available
   });
 
   const preSaveChecks = async function(next) {
     try {
       const company: Company = this || {};
+      company.lastUpdate = new Date();
       // update geocode location
       const geoLocation = await mapUtil.getGeocode(company.address);
       company.geoAddress = geoLocation;
       // check owner
       const user = await UserModel.findById(company.owner);
-      if (!user) return next(new Error('owner id is invalid'));
+      if (!user) return next(new Error('invalid company owner'));
       // check company type
       const companytype = await CompanyTypeModel.findById(company.type);
-      if (!companytype) return next(new Error('type id is invalid'));
+      if (!companytype) return next(new Error('invalid company type'));
       return next();
     } catch (err) {
       return next(err);
@@ -61,6 +60,9 @@ export const getCompanyModel = (
 
   CompanySchema.pre('save', preSaveChecks);
   CompanySchema.pre('update', preSaveChecks);
+  CompanySchema.post('remove', function(company) {
+    emitRemove(company);
+  });
 
   return dbConnection.model('Company', CompanySchema);
 };

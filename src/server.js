@@ -1,32 +1,32 @@
 // @flow
 import http, { Server } from 'http';
+import EventEmitter from 'events';
 // import https from 'https';
-import type { AppRoutes } from './service/express/routes';
 
 import initApp from './service/express/app';
 // import initRedis from './service/redis/redis';
 import { initMongoose } from './service/mongodb/mongoose';
-// import initWebsocket from './service/websocket/websocket';
 import { LoggerInstance } from 'winston';
 import LOGGER from './config/logger';
 import env from './config/env';
+import { crud } from './service/crud/crud';
+
+import { initWebsocket } from './service/websocket/websocket';
+import { EVENTS } from './service/websocket/websocket.event';
 
 // auth
-import { initAuthRoutes } from './service/passport/auth.route';
 import { getAdminModel } from './service/passport/admin/admin.mongo';
+import { initAuthRoutes } from './service/passport/auth.route';
 
-// company
+// api
 import { getCompanyModel } from './api/company/company.mongo';
-import { initCompanyRoutes } from './api/company/company.route';
-// import { initCompanyChannel } from './api/company/company.ws';
-
-// company types
 import { getCompanyTypeModel } from './api/companytype/companytype.mongo';
-import { initCompanyTypeRoutes } from './api/companytype/companytype.route';
-
-// user
+import { getCompanyPopularityModel } from './api/companypopularity/companypopularity.mongo';
 import { getUserModel } from './api/user/user.mongo';
-import { initUserRoutes } from './api/user/user.route';
+import { userCrudRoute } from './api/user/user.route';
+
+// types
+import type { AppRoutes } from './service/express/routes';
 
 /**
  * Handle server errors
@@ -35,7 +35,7 @@ import { initUserRoutes } from './api/user/user.route';
  * @return {void}
  */
 function handleServerError(server: Server, logger: LoggerInstance) {
-  server.on('error', (err: Error) => {
+  server.on('error', (err: any) => {
     if (err.syscall !== 'listen') {
       logger.error(err.message);
       throw err;
@@ -62,6 +62,9 @@ function handleServerError(server: Server, logger: LoggerInstance) {
 
 (async () => {
   try {
+    // event emitters
+    const apiEvents = new EventEmitter();
+
     // db connections
     // const redis = await initRedis(LOGGER);
     const mongodb = await initMongoose();
@@ -70,15 +73,64 @@ function handleServerError(server: Server, logger: LoggerInstance) {
     const AdminModel = getAdminModel(mongodb);
     const CompanyTypeModel = getCompanyTypeModel(mongodb);
     const UserModel = getUserModel(mongodb);
-    const CompanyModel = getCompanyModel(mongodb, UserModel, CompanyTypeModel);
+    const CompanyModel = getCompanyModel(
+      mongodb,
+      UserModel,
+      CompanyTypeModel,
+      (company: any) => apiEvents.emit(EVENTS.COMPANY.deleted, company)
+    );
+    const CompanyPopularityModel = getCompanyPopularityModel(
+      mongodb,
+      CompanyModel,
+      UserModel
+    );
 
     // express routes
     const appRoutes: AppRoutes = {
       auth: [initAuthRoutes(UserModel, AdminModel)],
       api: [
-        initUserRoutes(UserModel),
-        initCompanyTypeRoutes(CompanyTypeModel),
-        initCompanyRoutes(CompanyModel)
+        userCrudRoute(UserModel, CompanyModel),
+        crud({
+          path: '/companytype',
+          model: CompanyTypeModel,
+          after: {
+            delete: async (result: any, req: Request, res: Response) => {
+              // delete associated companies
+              await CompanyModel.remove({ type: result._id });
+              return result;
+            }
+          }
+        }),
+        crud({
+          path: '/company',
+          model: CompanyModel,
+          after: {
+            create: async (result: any, req: Request, res: Response) => {
+              apiEvents.emit(EVENTS.COMPANY.created, result);
+              return result;
+            },
+            update: async (result: any, req: Request, res: Response) => {
+              apiEvents.emit(EVENTS.COMPANY.updated, result);
+              await CompanyModel.remove({ type: result._id });
+              return result;
+            },
+            delete: async (result: any, req: Request, res: Response) => {
+              apiEvents.emit(EVENTS.COMPANY.deleted, result);
+              await CompanyPopularityModel.remove({ companyId: result._id });
+              return result;
+            }
+          }
+        }),
+        crud({
+          path: '/companypopularity',
+          model: CompanyPopularityModel,
+          after: {
+            create: async (result: any, req: Request, res: Response) => {
+              apiEvents.emit(EVENTS.COMPANY.clicked, result);
+              return result;
+            }
+          }
+        })
       ]
     };
 
@@ -86,17 +138,22 @@ function handleServerError(server: Server, logger: LoggerInstance) {
     const app = initApp(appRoutes, UserModel, AdminModel);
     app.set('env', env.nodeEnv);
     const server = http.createServer(app).listen(env.port.default);
-    // const httpsServer = https.createServer(app).listen(env.port.https);
-    //
-    // initWebsocket(server, redis, [initCompanyChannel], LOGGER);
+
+    initWebsocket({
+      server,
+      apiEvents,
+      UserModel,
+      AdminModel
+    });
 
     handleServerError(server, LOGGER);
 
     const cleanExit = () => {
-      LOGGER.log('info', 'Server is down');
+      LOGGER.info('Server is down');
       // if (env.nodeEnv === 'production') {
       // redis.quit().then(() => process.exit(0));
       // }
+      process.exit(0);
     };
 
     process.once('SIGINT', cleanExit);
@@ -107,8 +164,9 @@ function handleServerError(server: Server, logger: LoggerInstance) {
       const bind =
         typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
       LOGGER.info(`Server Listening on ${bind}`);
+      LOGGER.info(`Process pid is ${process.pid}`);
     });
   } catch (err) {
-    LOGGER.log('error', err);
+    LOGGER.error(err);
   }
 })();

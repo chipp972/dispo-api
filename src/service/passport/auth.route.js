@@ -1,7 +1,5 @@
 // @flow
 import { Router, Request, Response, NextFunction } from 'express';
-import passport from 'passport';
-import { formatResponse } from '../../service/express/utils.route';
 import { initAdminAuthRoutes } from './admin/admin_auth.route.js';
 import type { Model } from 'mongoose';
 

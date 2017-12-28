@@ -1,0 +1,12 @@
+// @flow
+import { Document } from 'mongoose';
+
+export type CompanyPopularityData = {
+  companyId: string,
+  userId: string,
+  rating?: number
+};
+
+export interface CompanyPopularity extends CompanyPopularityData, Document {
+  _id: string;
+}

@@ -2,12 +2,12 @@
 import helmet from 'helmet';
 import morgan from 'morgan';
 import bodyParser from 'body-parser';
-import { Application, Request, Response, NextFunction } from 'express';
 import passport from 'passport';
-import { Model } from 'mongoose';
 import cors, { CorsOptions } from 'cors';
 import { configurePassport } from '../passport/passport.config';
 import env from '../../config/env';
+import { Application, Request, Response, NextFunction } from 'express';
+import { Model } from 'mongoose';
 
 /**
  * add middlewares to express app
@@ -22,13 +22,14 @@ export default function applyMiddlewares(
   AdminModel: Model
 ): void {
   /* config and logger init */
-  const logmode = env.nodeEnv === 'production' ? 'combined' : 'short';
+  const isProd = env.nodeEnv === 'production';
+  const logmode = isProd ? 'combined' : 'short';
 
   // security
   app.use(helmet());
 
   // logs
-  if (env.nodeEnv === 'development') app.use(morgan('dev'));
+  if (!isProd) app.use(morgan('dev'));
   app.use(morgan(logmode));
 
   // requests
@@ -45,7 +46,7 @@ export default function applyMiddlewares(
   app.use(cors(corsOptions));
 
   // authentication
-  if (env.auth.isAuthenticationActivated || env.nodeEnv === 'production') {
+  if (env.auth.isAuthenticationActivated || isProd) {
     app.use(passport.initialize());
     configurePassport(UserModel, AdminModel);
     app.use(

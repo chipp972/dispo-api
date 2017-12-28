@@ -19,5 +19,6 @@ export const getAdminModel = (dbConnection: Connection): Model => {
     createdAt: { type: Date, default: Date.now() },
     expireAt: { type: Date, default: undefined }
   });
+
   return dbConnection.model('AdminUser', AdminUserSchema);
 };
