@@ -1,15 +1,12 @@
 // @flow
 import { Model, Schema, Connection } from 'mongoose';
 import { mapUtil } from '../../service/google/map.utils';
-import { WeekSchema } from '../schedule/schedule.mongo';
 import type { Company } from './company';
-import type { CompanyType } from '../companytype/companytype';
-import type { User } from '../user/user';
 
 export const getCompanyModel = (
   dbConnection: Connection,
-  UserModel: Model<User>,
-  CompanyTypeModel: Model<CompanyType>
+  UserModel: Model,
+  CompanyTypeModel: Model
 ): Model<Company> => {
   const GeocodeSchema = new Schema({
     lat: { type: Number, required: true },
@@ -37,8 +34,7 @@ export const getCompanyModel = (
     },
     address: { type: String, required: true, trim: true },
     geoAddress: GeocodeSchema,
-    phoneNumber: String,
-    schedule: WeekSchema
+    phoneNumber: String
   });
 
   const preSaveChecks = async function(next) {

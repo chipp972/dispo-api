@@ -1,16 +1,26 @@
 // @flow
-import { Model } from 'mongoose';
+import { Router } from 'express';
 import { generateCrudOperations } from './crud.mongo';
 import { generateCrudRoutes } from './crud.route';
+import type { CrudGenOptions } from './crud';
 
-export type CrudGenOptions = {
-  model: Model
+export const crud = ({
+  model,
+  responseFormatter,
+  before,
+  after,
+  path
+}: CrudGenOptions) => {
+  const router = Router();
+  const operations = generateCrudOperations(model);
+  router.use(
+    path,
+    generateCrudRoutes({
+      operations,
+      responseFormatter,
+      before,
+      after
+    })
+  );
+  return router;
 };
-
-const crud = (options: CrudGenOptions) => {
-  const operations = generateCrudOperations(options.model);
-  const routes = generateCrudRoutes({ operation: operations });
-  return routes;
-};
-
-export default crud;

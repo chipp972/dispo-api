@@ -6,13 +6,14 @@ import env from '../../config/env';
 
 export const initMongoose = async (): Promise<Connection> => {
   (mongoose: any).Promise = global.Promise;
+  const isProd = env.nodeEnv === 'production';
 
   const options: ConnectionOptions = {
     useMongoClient: true,
-    autoIndex: env.nodeEnv === 'development',
+    autoIndex: !isProd,
     promiseLibrary: global.Promise,
     poolSize: env.database.mongoPoolSize,
-    autoReconnect: env.nodeEnv === 'production'
+    autoReconnect: isProd
   };
 
   return new Promise((resolve, reject) => {

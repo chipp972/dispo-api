@@ -1,7 +1,6 @@
 // @flow
 import http, { Server } from 'http';
 // import https from 'https';
-import type { AppRoutes } from './service/express/routes';
 
 import initApp from './service/express/app';
 // import initRedis from './service/redis/redis';
@@ -10,23 +9,20 @@ import { initWebsocket } from './service/websocket/websocket';
 import { LoggerInstance } from 'winston';
 import LOGGER from './config/logger';
 import env from './config/env';
+import { crud } from './service/crud/crud';
 
 // auth
-import { initAuthRoutes } from './service/passport/auth.route';
 import { getAdminModel } from './service/passport/admin/admin.mongo';
+import { initAuthRoutes } from './service/passport/auth.route';
 
-// company
+// api
 import { getCompanyModel } from './api/company/company.mongo';
-import { initCompanyRoutes } from './api/company/company.route';
-// import { initCompanyChannel } from './api/company/company.ws';
-
-// company types
 import { getCompanyTypeModel } from './api/companytype/companytype.mongo';
-import { initCompanyTypeRoutes } from './api/companytype/companytype.route';
-
-// user
 import { getUserModel } from './api/user/user.mongo';
-import { initUserRoutes } from './api/user/user.route';
+import { userCrudRoute } from './api/user/user.route';
+
+// types
+import type { AppRoutes } from './service/express/routes';
 
 /**
  * Handle server errors
@@ -35,7 +31,7 @@ import { initUserRoutes } from './api/user/user.route';
  * @return {void}
  */
 function handleServerError(server: Server, logger: LoggerInstance) {
-  server.on('error', (err: Error) => {
+  server.on('error', (err: any) => {
     if (err.syscall !== 'listen') {
       logger.error(err.message);
       throw err;
@@ -76,9 +72,22 @@ function handleServerError(server: Server, logger: LoggerInstance) {
     const appRoutes: AppRoutes = {
       auth: [initAuthRoutes(UserModel, AdminModel)],
       api: [
-        initUserRoutes(UserModel),
-        initCompanyTypeRoutes(CompanyTypeModel),
-        initCompanyRoutes(CompanyModel)
+        userCrudRoute(UserModel, CompanyModel),
+        crud({
+          path: '/companytype',
+          model: CompanyTypeModel,
+          // delete associated companies
+          after: {
+            delete: async (result: any, req: Request, res: Response) => {
+              await CompanyModel.remove({ type: result._id });
+              return result;
+            }
+          }
+        }),
+        crud({
+          path: '/company',
+          model: CompanyModel
+        })
       ]
     };
 
@@ -87,16 +96,17 @@ function handleServerError(server: Server, logger: LoggerInstance) {
     app.set('env', env.nodeEnv);
     const server = http.createServer(app).listen(env.port.default);
     // const httpsServer = https.createServer(app).listen(env.port.https);
-    //
+
     initWebsocket(server);
 
     handleServerError(server, LOGGER);
 
     const cleanExit = () => {
-      LOGGER.log('info', 'Server is down');
+      LOGGER.info('Server is down');
       // if (env.nodeEnv === 'production') {
       // redis.quit().then(() => process.exit(0));
       // }
+      process.exit(0);
     };
 
     process.once('SIGINT', cleanExit);
@@ -107,8 +117,9 @@ function handleServerError(server: Server, logger: LoggerInstance) {
       const bind =
         typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
       LOGGER.info(`Server Listening on ${bind}`);
+      LOGGER.info(`Process pid is ${process.pid}`);
     });
   } catch (err) {
-    LOGGER.log('error', err);
+    LOGGER.error(err);
   }
 })();

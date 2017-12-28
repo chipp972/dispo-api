@@ -2,7 +2,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { sendPasswordlessAuthMail } from '../../../service/mail/smtp';
-import { formatResponse } from '../../../service/express/utils.route';
 import env from '../../../config/env';
 import { generate } from 'shortid';
 import moment from 'moment-timezone';
@@ -31,11 +30,11 @@ export function initAdminAuthRoutes(UserModel: Model, AdminUserModel: Model) {
           code,
           expireAt: limitDate
         });
-        return formatResponse(
-          res,
-          200,
-          ({ email: admin.email }: PasswordLessStartResponse)
-        );
+        const data: PasswordLessStartResponse = { email: admin.email };
+        return res.status(200).json({
+          success: true,
+          data
+        });
       } catch (err) {
         // catch invalid mail recipient or format errors
         next(err);
@@ -58,18 +57,19 @@ export function initAdminAuthRoutes(UserModel: Model, AdminUserModel: Model) {
           { $set: { expireAt } }
         );
         if (!admin) {
-          return formatResponse(res, 403, { message: 'unauthorized' });
+          res.status(403);
+          return next(new Error('unauthorized access'));
         }
         const token = jwt.sign(admin.toJSON(), env.auth.secretOrKey);
-        return formatResponse(
-          res,
-          200,
-          ({
-            tokenId: admin._id,
-            token,
-            expireAt: expireAt.unix()
-          }: AuthResponse)
-        );
+        const data: AuthResponse = {
+          tokenId: admin._id,
+          token,
+          expireAt: expireAt.unix()
+        };
+        return res.status(200).json({
+          success: true,
+          data
+        });
       } catch (err) {
         next(err);
       }

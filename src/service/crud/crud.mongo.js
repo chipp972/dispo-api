@@ -2,8 +2,12 @@
 import { Model } from 'mongoose';
 import type { ReqUser, CrudOperations, MongooseCrudGenerator } from './crud';
 
+export const toRawObject = (obj: any) => obj.toObject();
+
+export const toRawObjectList = (arr: any[]) => arr.map(toRawObject);
+
 export const isUserAuthorized = (obj: any, user: ReqUser): boolean =>
-  user.role === 'admin' || obj.owner === user._id;
+  user.role === 'admin' || obj.owner === user._id || obj._id === user._id;
 
 /**
  * generate mongoose operations
@@ -15,27 +19,29 @@ export const generateCrudOperations: MongooseCrudGenerator = (
 ): CrudOperations => ({
   getAll: async (): Promise<any[]> => {
     const objList = await model.find({});
-    return objList;
+    return toRawObjectList(objList);
   },
   getById: async ({ id }): Promise<*> => {
     const obj = await model.findById(id);
-    return obj;
+    return toRawObject(obj);
   },
   create: async ({ data }): Promise<*> => {
     const obj = await model.create(data);
-    return obj;
+    return toRawObject(obj);
   },
-  edit: async ({ id, data }): Promise<*> => {
+  update: async ({ id, data, user }): Promise<*> => {
     const obj = await model.findById(id);
+    if (!isUserAuthorized(obj, user)) throw new Error('unauthorized operation');
     delete data._id;
     delete data.__v;
     const newObj = Object.assign(obj, data);
     await newObj.save();
-    return newObj;
+    return toRawObject(newObj);
   },
-  remove: async ({ id }): Promise<*> => {
+  delete: async ({ id, user }): Promise<*> => {
     const obj = await model.findById(id);
+    if (!isUserAuthorized(obj, user)) throw new Error('unauthorized operation');
     await obj.remove();
-    return obj;
+    return toRawObject(obj);
   }
 });

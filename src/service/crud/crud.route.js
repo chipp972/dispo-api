@@ -2,19 +2,18 @@
 import { Request, Response, NextFunction, Router } from 'express';
 import type {
   CrudOperation,
-  CrudOperations,
   CrudOptions,
   Middleware,
-  RouteHooks
+  MongooseCrudGenerator
 } from './crud';
 
-export const errorHandlerWrapper = (middleware: Middleware) => (
+export const errorHandlerWrapper = (middleware: Middleware) => async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    middleware(req, res, next);
+    await middleware(req, res, next);
   } catch (err) {
     next(err);
   }
@@ -35,24 +34,26 @@ export const defaultResponseFormatter = (req: Request, res: Response): void =>
 export const generateRoute = ({
   operation,
   status,
-  before = () => undefined,
-  after = () => undefined
+  before = CrudOptions => undefined,
+  after = obj => obj
 }: {
   operation: CrudOperation,
   status: number,
-  before: Middleware,
+  before: CrudOperation,
   after: Middleware
 }) =>
   errorHandlerWrapper(
     async (req: Request, res: Response, next: NextFunction) => {
       const options: CrudOptions = {
         id: req.params.id || '',
-        data: req.body
+        data: req.body,
+        user: req.user || { _id: '' }
       };
-      errorHandlerWrapper(before)(req, res, next);
-      res.data = await operation(options);
-      res.status(status);
-      errorHandlerWrapper(after)(req, res, next);
+      await before(options);
+      const result = await operation(options);
+      const modifiedResult = await after(result, req, res);
+      res.data = modifiedResult;
+      res.status(res.statusCode || status);
       next();
     }
   );
@@ -62,16 +63,11 @@ export const generateRoute = ({
  * @param {CrudOperations} operations
  * @return {Router}
  */
-export const generateCrudRoutes = ({
+export const generateCrudRoutes: MongooseCrudGenerator = ({
   operations,
   responseFormatter,
   before = {},
   after = {}
-}: {
-  operations: CrudOperations,
-  responseFormatter?: Middleware,
-  before: RouteHooks | Object,
-  after: RouteHooks | Object
 }): Router => {
   const router = Router();
   const formatResponse = responseFormatter || defaultResponseFormatter;
@@ -85,18 +81,49 @@ export const generateCrudRoutes = ({
     })
   );
 
-  router
-    .route('/')
-    .post(before.create)
-    .post(generateRoute({ operation: operations.create, status: 201 }))
-    .post(after.create);
+  router.route('/').post(
+    generateRoute({
+      operation: operations.create,
+      status: 201,
+      before: before.create,
+      after: after.create
+    })
+  );
 
   router
     .route('/:id')
-    .get(generateRoute({ operation: operations.getById, status: 200 }))
-    .put(generateRoute({ operation: operations.edit, status: 200 }))
-    .patch(generateRoute({ operation: operations.edit, status: 200 }))
-    .delete(generateRoute({ operation: operations.remove, status: 200 }));
+    .get(
+      generateRoute({
+        operation: operations.getById,
+        status: 200,
+        before: before.getById,
+        after: after.getById
+      })
+    )
+    .put(
+      generateRoute({
+        operation: operations.update,
+        status: 200,
+        before: before.update,
+        after: after.update
+      })
+    )
+    .patch(
+      generateRoute({
+        operation: operations.update,
+        status: 200,
+        before: before.update,
+        after: after.update
+      })
+    )
+    .delete(
+      generateRoute({
+        operation: operations.delete,
+        status: 200,
+        before: before.delete,
+        after: after.delete
+      })
+    );
 
   router.use('*', formatResponse);
 
