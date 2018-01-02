@@ -24,23 +24,12 @@ export const initWebsocket = ({
 }: WebsocketOptions): SocketIO.Server => {
   const ws: SocketIO.Server = io(server);
 
-  // emit events to clients
+  // emit events to clients when apiEvent emit something
   const emitEvent = (key, event) =>
     apiEvents.on(event, (data: any) => ws.emit(event, data));
   forEachObjIndexed(emitEvent, EVENTS.COMPANY);
 
-  // authentication middleware
-  ws.use((socket, next) => {
-    const token = socket.handshake.query.token;
-    jwt.verify(token, env.auth.secretOrKey, (jwtPayload: { role: string }) => {
-      const { _id, email, code, role } = jwtPayload;
-      console.log(jwtPayload, 'jwtttt');
-      // TODO: finish verification
-      return next();
-      return next(new Error('authentication error'));
-    });
-  });
-
+  // client interactions
   ws.on('connection', (socket: SocketIO.Socket) => {
     LOGGER.info('client connected');
 
@@ -48,8 +37,14 @@ export const initWebsocket = ({
     socket.on('close', () => LOGGER.info('client disconnected'));
 
     // broadcast all company events when received
-    const broadcastEvent = (key, event) =>
-      socket.on(event, (data: any) => socket.broadcast.emit(event, data));
+    const broadcastEvent = (event, key) => {
+      console.log(event, 'event');
+      console.log('register broadcast ' + event);
+      socket.on(event, (data: any) => {
+        console.log(event, 'broadcast emit');
+        socket.broadcast.emit(event, data);
+      });
+    };
 
     forEachObjIndexed(broadcastEvent, EVENTS.COMPANY);
   });

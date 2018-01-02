@@ -99,7 +99,8 @@ function handleServerError(server: Server, logger: LoggerInstance) {
               await CompanyModel.remove({ type: result._id });
               return result;
             }
-          }
+          },
+          isAuthenticationActivated: env.auth.isAuthenticationActivated
         }),
         crud({
           path: '/company',
@@ -119,7 +120,8 @@ function handleServerError(server: Server, logger: LoggerInstance) {
               await CompanyPopularityModel.remove({ companyId: result._id });
               return result;
             }
-          }
+          },
+          isAuthenticationActivated: env.auth.isAuthenticationActivated
         }),
         crud({
           path: '/companypopularity',
@@ -129,7 +131,8 @@ function handleServerError(server: Server, logger: LoggerInstance) {
               apiEvents.emit(EVENTS.COMPANY.clicked, result);
               return result;
             }
-          }
+          },
+          isAuthenticationActivated: env.auth.isAuthenticationActivated
         })
       ]
     };

@@ -9,10 +9,11 @@ export const crud = ({
   responseFormatter,
   before,
   after,
-  path
+  path,
+  isAuthenticationActivated
 }: CrudGenOptions) => {
   const router = Router();
-  const operations = generateCrudOperations(model);
+  const operations = generateCrudOperations(model, isAuthenticationActivated);
   router.use(
     path,
     generateCrudRoutes({

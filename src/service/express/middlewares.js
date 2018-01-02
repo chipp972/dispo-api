@@ -56,7 +56,6 @@ export default function applyMiddlewares(
         failureRedirect: '/auth/failure'
       }),
       (req: Request, res: Response, next: NextFunction) => {
-        console.log(req.user, 'user [middlewares.js]');
         next();
       }
     );

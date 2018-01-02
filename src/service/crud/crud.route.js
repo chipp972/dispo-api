@@ -4,7 +4,7 @@ import type {
   CrudOperation,
   CrudOptions,
   Middleware,
-  MongooseCrudGenerator
+ExpressCrudGenerator
 } from './crud';
 
 export const errorHandlerWrapper = (middleware: Middleware) => async (
@@ -34,8 +34,8 @@ export const defaultResponseFormatter = (req: Request, res: Response): void =>
 export const generateRoute = ({
   operation,
   status,
-  before = CrudOptions => undefined,
-  after = obj => obj
+  before = (options: CrudOptions) => undefined,
+  after = (obj: any) => obj
 }: {
   operation: CrudOperation,
   status: number,
@@ -63,7 +63,7 @@ export const generateRoute = ({
  * @param {CrudOperations} operations
  * @return {Router}
  */
-export const generateCrudRoutes: MongooseCrudGenerator = ({
+export const generateCrudRoutes: ExpressCrudGenerator = ({
   operations,
   responseFormatter,
   before = {},

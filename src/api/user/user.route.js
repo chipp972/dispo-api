@@ -4,6 +4,7 @@ import { filterProperty } from '../../helper';
 import { isValidPassword } from './user.helper';
 import { Model } from 'mongoose';
 import { Request, Response, Router } from 'express';
+import env from '../../config/env';
 
 export const userCrudRoute = (
   UserModel: Model,
@@ -39,6 +40,7 @@ export const userCrudRoute = (
         await CompanyModel.remove({ owner: result._id });
         return result;
       }
-    }
+    },
+    isAuthenticationActivated: env.auth.isAuthenticationActivated
   });
 };

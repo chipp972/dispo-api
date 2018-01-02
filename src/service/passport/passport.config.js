@@ -18,7 +18,7 @@ export const configurePassport = function(
   // function called everytime the secured end points are requested
   const strategy = new Strategy(opts, (jwtPayload, done) => {
     const { _id, email, code, role } = jwtPayload;
-    console.log(jwtPayload, 'jwt-payload');
+    console.log(jwtPayload, 'jwt-payload [passport.config]');
 
     // admin authentication
     if (role === 'admin') {

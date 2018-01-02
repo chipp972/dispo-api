@@ -34,17 +34,23 @@ export type RouteHooks = {
   delete: Middleware
 };
 
-export type MongooseCrudGenerator = ({
-  operations: CrudOperations,
-  responseFormatter?: Middleware,
-  before: CrudOperations,
-  after: RouteHooks
-}) => CrudOperations;
+export type MongooseCrudGenerator = (
+  model: Model,
+  isAuthenticationActivated: boolean
+) => CrudOperations;
 
 export type CrudGenOptions = {
   model: Model,
   responseFormatter?: Middleware,
   before: CrudOperations,
   after: RouteHooks,
-  path: string
+  path: string,
+  isAuthenticationActivated: boolean
 };
+
+export type ExpressCrudGenerator = ({
+  operations: CrudOperations,
+  responseFormatter: Middleware,
+  before: CrudOperations,
+  after: RouteHooks
+}) => Router;
