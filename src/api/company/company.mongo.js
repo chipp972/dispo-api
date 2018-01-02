@@ -10,8 +10,8 @@ export const getCompanyModel = (
   emitRemove: Company => any
 ): Model => {
   const GeocodeSchema = new Schema({
-    lat: { type: Number, required: true },
-    lng: { type: Number, required: true }
+    latitude: { type: Number, required: true },
+    longitude: { type: Number, required: true }
   });
 
   const CompanySchema = new Schema({
