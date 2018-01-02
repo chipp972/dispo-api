@@ -23,9 +23,6 @@ export default {
       sessionExpiration: process.env.ADMIN_SESSION_EXPIRATION || 2700
     }
   },
-  queue: {
-    concurrency: process.env.QUEUE_CONCURRENCY || 1
-  },
   google: {
     apiKey: process.env.GOOGLE_API_KEY,
     clientId: process.env.GOOGLE_CLIENT_ID,

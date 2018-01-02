@@ -46,7 +46,7 @@ export default function applyMiddlewares(
   app.use(cors(corsOptions));
 
   // authentication
-  if (env.auth.isAuthenticationActivated || isProd) {
+  if (env.auth.isAuthenticationActivated) {
     app.use(passport.initialize());
     configurePassport(UserModel, AdminModel);
     app.use(
