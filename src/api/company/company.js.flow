@@ -13,6 +13,6 @@ export type CompanyData = {
 
 export interface Company extends CompanyData, Document {
   _id: string;
-  geoAddress: { lat: number, lng: number };
+  geoAddress: { latitude: number, longitude: number };
   recentlyAvailable: Date;
 }

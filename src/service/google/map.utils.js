@@ -11,7 +11,9 @@ const mapClient = createClient({
 });
 
 export type MapUtils = {
-  getGeocode: (address: string) => Promise<{ lat: number, lng: number }>
+  getGeocode: (
+    address: string
+  ) => Promise<{ latitude: number, longitude: number }>
 };
 
 export const mapUtil: MapUtils = {
@@ -22,8 +24,10 @@ export const mapUtil: MapUtils = {
           address
         })
         .asPromise()
-        .then(res => resolve(res.json.results[0].geometry.location))
-        .catch(err => reject(err));
+        .then((res: any) => res.json.results[0].geometry.location)
+        .then((res: { lat: number, lng: number }) =>
+          resolve({ latitude: res.lat, longitude: res.lng })
+        )
+        .catch((err: Error) => reject(err));
     })
 };
-
