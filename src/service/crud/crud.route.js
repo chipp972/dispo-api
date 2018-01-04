@@ -4,7 +4,8 @@ import type {
   CrudOperation,
   CrudOptions,
   Middleware,
-ExpressCrudGenerator
+  CrudAfterMiddleware,
+  ExpressCrudGenerator
 } from './crud';
 
 export const errorHandlerWrapper = (middleware: Middleware) => async (
@@ -34,13 +35,13 @@ export const defaultResponseFormatter = (req: Request, res: Response): void =>
 export const generateRoute = ({
   operation,
   status,
-  before = (options: CrudOptions) => undefined,
-  after = (obj: any) => obj
+  before = (options: CrudOptions) => Promise.resolve(),
+  after = (obj: any) => Promise.resolve(obj)
 }: {
   operation: CrudOperation,
   status: number,
   before: CrudOperation,
-  after: Middleware
+  after: CrudAfterMiddleware
 }) =>
   errorHandlerWrapper(
     async (req: Request, res: Response, next: NextFunction) => {
@@ -51,8 +52,8 @@ export const generateRoute = ({
       };
       await before(options);
       const result = await operation(options);
-      const modifiedResult = await after(result, req, res);
-      res.data = modifiedResult;
+      const modifiedResult = await after(result, req);
+      res.data = modifiedResult !== undefined ? modifiedResult : result;
       res.status(res.statusCode || status);
       next();
     }

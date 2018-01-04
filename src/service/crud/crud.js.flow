@@ -20,19 +20,21 @@ export type CrudOperations = {
   delete: CrudOptions => Promise<any>
 };
 
+export type CrudAfterObject = {
+  getAll: CrudAfterMiddleware,
+  getById: CrudAfterMiddleware,
+  create: CrudAfterMiddleware,
+  update: CrudAfterMiddleware,
+  delete: CrudAfterMiddleware
+};
+
 export type Middleware = (
   req: Request,
   res: Response,
   next?: NextFunction
 ) => any;
 
-export type RouteHooks = {
-  getAll: Middleware,
-  getById: Middleware,
-  create: Middleware,
-  update: Middleware,
-  delete: Middleware
-};
+export type CrudAfterMiddleware = (result: any, req: Request) => Promise<any>;
 
 export type MongooseCrudGenerator = (
   model: Model,
@@ -43,7 +45,7 @@ export type CrudGenOptions = {
   model: Model,
   responseFormatter?: Middleware,
   before: CrudOperations,
-  after: RouteHooks,
+  after: CrudAfterObject,
   path: string,
   isAuthenticationActivated: boolean
 };
@@ -52,5 +54,5 @@ export type ExpressCrudGenerator = ({
   operations: CrudOperations,
   responseFormatter: Middleware,
   before: CrudOperations,
-  after: RouteHooks
+  after: CrudAfterObject
 }) => Router;

@@ -1,14 +1,17 @@
 // @flow
+import { Request, Response, Router } from 'express';
+import EventEmitter from 'events';
+import { Model } from 'mongoose';
 import { crud } from '../../service/crud/crud';
 import { filterProperty } from '../../helper';
 import { isValidPassword } from './user.helper';
-import { Model } from 'mongoose';
-import { Request, Response, Router } from 'express';
+import { EVENTS } from '../../service/websocket/websocket.event';
 import env from '../../config/env';
 
 export const userCrudRoute = (
   UserModel: Model,
-  CompanyModel: Model
+  CompanyModel: Model,
+  apiEvents: EventEmitter
 ): Router => {
   return crud({
     path: '/user',
@@ -36,9 +39,15 @@ export const userCrudRoute = (
     },
     // delete owned companies
     after: {
-      delete: async (result: any, req: Request, res: Response) => {
+      create: async (result: any, req: Request) => {
+        apiEvents.emit(EVENTS.USER.created, result);
+      },
+      update: async (result: any, req: Request) => {
+        apiEvents.emit(EVENTS.USER.updated, result);
+      },
+      delete: async (result: any, req: Request) => {
         await CompanyModel.remove({ owner: result._id });
-        return result;
+        apiEvents.emit(EVENTS.USER.deleted, result);
       }
     },
     isAuthenticationActivated: env.auth.isAuthenticationActivated

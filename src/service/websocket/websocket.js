@@ -24,10 +24,15 @@ export const initWebsocket = ({
 }: WebsocketOptions): SocketIO.Server => {
   const ws: SocketIO.Server = io(server);
 
-  // emit events to clients when apiEvent emit something
-  const emitEvent = (key, event) =>
+  const emitEvent = (event: string, key: string) => {
     apiEvents.on(event, (data: any) => ws.emit(event, data));
+  };
+
+  // emit events to clients when apiEvent emit something
+  forEachObjIndexed(emitEvent, EVENTS.USER);
   forEachObjIndexed(emitEvent, EVENTS.COMPANY);
+  forEachObjIndexed(emitEvent, EVENTS.COMPANY_TYPE);
+  forEachObjIndexed(emitEvent, EVENTS.COMPANY_POPULARITY);
 
   // client interactions
   ws.on('connection', (socket: SocketIO.Socket) => {
@@ -35,18 +40,6 @@ export const initWebsocket = ({
 
     socket.on('error', (err: Error) => LOGGER.error(err));
     socket.on('close', () => LOGGER.info('client disconnected'));
-
-    // broadcast all company events when received
-    const broadcastEvent = (event, key) => {
-      console.log(event, 'event');
-      console.log('register broadcast ' + event);
-      socket.on(event, (data: any) => {
-        console.log(event, 'broadcast emit');
-        socket.broadcast.emit(event, data);
-      });
-    };
-
-    forEachObjIndexed(broadcastEvent, EVENTS.COMPANY);
   });
 
   return ws;

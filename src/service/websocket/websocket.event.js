@@ -1,13 +1,17 @@
 // @flow
 
+const crudEvents = (modelName: string) => {
+  const name = modelName.toUpperCase();
+  return {
+    created: `CREATE_${name}`,
+    updated: `EDIT_${name}`,
+    deleted: `REMOVE_${name}`
+  };
+};
+
 export const EVENTS = {
-  COMPANY: {
-    clicked: 'COMPANY_CLICKED',
-    created: 'COMPANY_CREATED',
-    updated: 'COMPANY_UPDATED',
-    deleted: 'COMPANY_DELETED',
-    edit: 'COMPANY_EDIT',
-    create: 'COMPANY_CREATE',
-    remove: 'COMPANY_REMOVE'
-  }
+  USER: crudEvents('user'),
+  COMPANY: crudEvents('company'),
+  COMPANY_TYPE: crudEvents('companytype'),
+  COMPANY_POPULARITY: crudEvents('companypopularity')
 };

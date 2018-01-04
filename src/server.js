@@ -89,15 +89,20 @@ function handleServerError(server: Server, logger: LoggerInstance) {
     const appRoutes: AppRoutes = {
       auth: [initAuthRoutes(UserModel, AdminModel)],
       api: [
-        userCrudRoute(UserModel, CompanyModel),
+        userCrudRoute(UserModel, CompanyModel, apiEvents),
         crud({
           path: '/companytype',
           model: CompanyTypeModel,
           after: {
-            delete: async (result: any, req: Request, res: Response) => {
-              // delete associated companies
+            create: async (result: any, req: Request) => {
+              apiEvents.emit(EVENTS.COMPANY_TYPE.created, result);
+            },
+            update: async (result: any, req: Request) => {
+              apiEvents.emit(EVENTS.COMPANY_TYPE.updated, result);
+            },
+            delete: async (result: any, req: Request) => {
               await CompanyModel.remove({ type: result._id });
-              return result;
+              apiEvents.emit(EVENTS.COMPANY_TYPE.deleted, result);
             }
           },
           isAuthenticationActivated: env.auth.isAuthenticationActivated
@@ -106,19 +111,15 @@ function handleServerError(server: Server, logger: LoggerInstance) {
           path: '/company',
           model: CompanyModel,
           after: {
-            create: async (result: any, req: Request, res: Response) => {
+            create: async (result: any, req: Request) => {
               apiEvents.emit(EVENTS.COMPANY.created, result);
-              return result;
             },
-            update: async (result: any, req: Request, res: Response) => {
+            update: async (result: any, req: Request) => {
               apiEvents.emit(EVENTS.COMPANY.updated, result);
-              await CompanyModel.remove({ type: result._id });
-              return result;
             },
-            delete: async (result: any, req: Request, res: Response) => {
-              apiEvents.emit(EVENTS.COMPANY.deleted, result);
+            delete: async (result: any, req: Request) => {
               await CompanyPopularityModel.remove({ companyId: result._id });
-              return result;
+              apiEvents.emit(EVENTS.COMPANY.deleted, result);
             }
           },
           isAuthenticationActivated: env.auth.isAuthenticationActivated
@@ -127,9 +128,14 @@ function handleServerError(server: Server, logger: LoggerInstance) {
           path: '/companypopularity',
           model: CompanyPopularityModel,
           after: {
-            create: async (result: any, req: Request, res: Response) => {
-              apiEvents.emit(EVENTS.COMPANY.clicked, result);
-              return result;
+            create: async (result: any, req: Request) => {
+              apiEvents.emit(EVENTS.COMPANY_POPULARITY.created, result);
+            },
+            update: async (result: any, req: Request) => {
+              apiEvents.emit(EVENTS.COMPANY_POPULARITY.updated, result);
+            },
+            delete: async (result: any, req: Request) => {
+              apiEvents.emit(EVENTS.COMPANY_POPULARITY.deleted, result);
             }
           },
           isAuthenticationActivated: env.auth.isAuthenticationActivated
