@@ -15,8 +15,6 @@ import type {
   AuthResponse,
   PasswordLessStartResponse
 } from '../src/service/passport/admin/admin';
-import io from 'socket.io-client';
-import { EVENTS } from '../src/service/websocket/websocket.event';
 
 export type FetchFunction = Function;
 
@@ -24,7 +22,8 @@ export type FetchOptions = {
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   path: string,
   data?: any,
-  headers?: { [key: string]: string }
+  headers?: { [key: string]: string },
+  isForm?: boolean
 };
 
 export interface FetchWithTokenOptions extends FetchOptions {
@@ -102,20 +101,28 @@ const generateCrudOperations = function<T1, T2>(
   };
 };
 
-export function fetchBasic(fetchFunction: FetchFunction, baseUrl: string) {
+export function fetchBasic(
+  fetchFunction: FetchFunction,
+  baseUrl: string,
+  isForm: boolean
+) {
   return async ({ method, path, data, headers }: FetchOptions): Promise<*> =>
     new Promise((resolve, reject) => {
+      const body =
+        method === 'HEAD' || method === 'GET' || !data
+          ? null
+          : isForm ? data : JSON.stringify(data);
       return fetchFunction(`${baseUrl}${path}`, {
         method,
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Content-Type': !isForm && 'application/json',
           ...headers
         },
-        body: JSON.stringify(data)
+        body
       })
-        .then(res => res.json())
-        .then(res => (res.success ? resolve(res.data) : reject(res)))
+        .then((res: any) => res.json())
+        .then((res: any) => (res.success ? resolve(res.data) : reject(res)))
         .catch((err: Error) => reject(err));
     });
 }
@@ -124,21 +131,27 @@ export const fetchWithToken = (
   fetchFunction: FetchFunction,
   baseUrl: string,
   token: string
-) => async ({ data, headers, method, path }: FetchOptions): Promise<*> =>
+) => async ({
+  data,
+  headers,
+  method,
+  path,
+  isForm
+}: FetchOptions): Promise<*> =>
   new Promise((resolve, reject) => {
-    const fetchAPI = fetchBasic(fetchFunction, baseUrl);
+    const fetchAPI = fetchBasic(fetchFunction, baseUrl, isForm || true);
     fetchAPI({
       method,
       path,
       data,
       headers: { ...headers, authorization: token }
     })
-      .then(res => resolve(res))
+      .then((res: any) => resolve(res))
       .catch((err: Error) => reject(err));
   });
 
 export const authAPI = (fetchFunction: FetchFunction, url: string): AuthAPI => {
-  const getAPIData = fetchBasic(fetchFunction, url);
+  const getAPIData = fetchBasic(fetchFunction, url, true);
   return {
     admin: {
       sendCode: (data: { email: string }): Promise<PasswordLessStartRes> =>
@@ -191,19 +204,5 @@ export const dataAPI = (fetchFunction: FetchFunction, url: string) => (
       getAPIData,
       '/api/companypopularity'
     )
-  };
-};
-
-export const socketAPI = (url: string, token: string) => {
-  const socket = io(url, {
-    query: {
-      token
-    }
-  });
-  return {
-    onCompanyCreated: (cb: Function) => socket.on(EVENTS.COMPANY.created, cb),
-    onCompanyUpdated: (cb: Function) => socket.on(EVENTS.COMPANY.updated, cb),
-    onCompanyDeleted: (cb: Function) => socket.on(EVENTS.COMPANY.deleted, cb),
-    onCompanyClicked: (cb: Function) => socket.on(EVENTS.COMPANY.clicked, cb)
   };
 };
