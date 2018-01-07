@@ -8,6 +8,7 @@ import { configurePassport } from '../passport/passport.config';
 import env from '../../config/env';
 import { Application, Request, Response, NextFunction } from 'express';
 import { Model } from 'mongoose';
+import formData from 'express-form-data';
 
 /**
  * add middlewares to express app
@@ -32,7 +33,13 @@ export default function applyMiddlewares(
   if (!isProd) app.use(morgan('dev'));
   app.use(morgan(logmode));
 
-  // requests
+  // multi-part form data
+  app.use(formData.parse({ autoFiles: true }));
+  app.use(formData.format());
+  app.use(formData.stream());
+  app.use(formData.union());
+
+  // json body
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
 

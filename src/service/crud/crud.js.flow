@@ -5,9 +5,10 @@ import { Router, Request, Response, NextFunction } from 'express';
 export type ReqUser = { _id: string, role?: string };
 
 export type CrudOptions = {
-  id?: string,
-  data?: any,
-  user?: ReqUser
+  id: string,
+  data: any,
+  user: ReqUser,
+  files?: { [filename: string]: { path: string } }
 };
 
 export type CrudOperation = CrudOptions => Promise<any>;

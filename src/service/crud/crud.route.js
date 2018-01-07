@@ -46,9 +46,10 @@ export const generateRoute = ({
   errorHandlerWrapper(
     async (req: Request, res: Response, next: NextFunction) => {
       const options: CrudOptions = {
-        id: req.params.id || '',
-        data: req.body,
-        user: req.user || { _id: '' }
+        id: req.params.id || (req.body && req.body._id) || '',
+        data: req.body || {},
+        user: req.user || { _id: '' },
+        files: req.files || {}
       };
       await before(options);
       const result = await operation(options);

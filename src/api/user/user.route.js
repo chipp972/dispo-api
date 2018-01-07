@@ -8,11 +8,15 @@ import { isValidPassword } from './user.helper';
 import { EVENTS } from '../../service/websocket/websocket.event';
 import env from '../../config/env';
 
-export const userCrudRoute = (
+type UserCrudRouteOptions = {
   UserModel: Model,
-  CompanyModel: Model,
   apiEvents: EventEmitter
-): Router => {
+};
+
+export const userCrudRoute = ({
+  UserModel,
+  apiEvents
+}: UserCrudRouteOptions): Router => {
   return crud({
     path: '/user',
     model: UserModel,
@@ -46,7 +50,6 @@ export const userCrudRoute = (
         apiEvents.emit(EVENTS.USER.updated, result);
       },
       delete: async (result: any, req: Request) => {
-        await CompanyModel.remove({ owner: result._id });
         apiEvents.emit(EVENTS.USER.deleted, result);
       }
     },

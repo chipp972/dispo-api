@@ -24,6 +24,9 @@ import { getCompanyTypeModel } from './api/companytype/companytype.mongo';
 import { getCompanyPopularityModel } from './api/companypopularity/companypopularity.mongo';
 import { getUserModel } from './api/user/user.mongo';
 import { userCrudRoute } from './api/user/user.route';
+import { companyCrudRoute } from './api/company/company.route';
+import { companyTypeCrudRoute } from './api/companytype/companytype.route';
+import { companyPopularityCrudRoute } from './api/companypopularity/companypopularity.route';
 
 // types
 import type { AppRoutes } from './service/express/routes';
@@ -73,12 +76,7 @@ function handleServerError(server: Server, logger: LoggerInstance) {
     const AdminModel = getAdminModel(mongodb);
     const CompanyTypeModel = getCompanyTypeModel(mongodb);
     const UserModel = getUserModel(mongodb);
-    const CompanyModel = getCompanyModel(
-      mongodb,
-      UserModel,
-      CompanyTypeModel,
-      (company: any) => apiEvents.emit(EVENTS.COMPANY.deleted, company)
-    );
+    const CompanyModel = getCompanyModel(mongodb, UserModel, CompanyTypeModel);
     const CompanyPopularityModel = getCompanyPopularityModel(
       mongodb,
       CompanyModel,
@@ -89,57 +87,10 @@ function handleServerError(server: Server, logger: LoggerInstance) {
     const appRoutes: AppRoutes = {
       auth: [initAuthRoutes(UserModel, AdminModel)],
       api: [
-        userCrudRoute(UserModel, CompanyModel, apiEvents),
-        crud({
-          path: '/companytype',
-          model: CompanyTypeModel,
-          after: {
-            create: async (result: any, req: Request) => {
-              apiEvents.emit(EVENTS.COMPANY_TYPE.created, result);
-            },
-            update: async (result: any, req: Request) => {
-              apiEvents.emit(EVENTS.COMPANY_TYPE.updated, result);
-            },
-            delete: async (result: any, req: Request) => {
-              await CompanyModel.remove({ type: result._id });
-              apiEvents.emit(EVENTS.COMPANY_TYPE.deleted, result);
-            }
-          },
-          isAuthenticationActivated: env.auth.isAuthenticationActivated
-        }),
-        crud({
-          path: '/company',
-          model: CompanyModel,
-          after: {
-            create: async (result: any, req: Request) => {
-              apiEvents.emit(EVENTS.COMPANY.created, result);
-            },
-            update: async (result: any, req: Request) => {
-              apiEvents.emit(EVENTS.COMPANY.updated, result);
-            },
-            delete: async (result: any, req: Request) => {
-              await CompanyPopularityModel.remove({ companyId: result._id });
-              apiEvents.emit(EVENTS.COMPANY.deleted, result);
-            }
-          },
-          isAuthenticationActivated: env.auth.isAuthenticationActivated
-        }),
-        crud({
-          path: '/companypopularity',
-          model: CompanyPopularityModel,
-          after: {
-            create: async (result: any, req: Request) => {
-              apiEvents.emit(EVENTS.COMPANY_POPULARITY.created, result);
-            },
-            update: async (result: any, req: Request) => {
-              apiEvents.emit(EVENTS.COMPANY_POPULARITY.updated, result);
-            },
-            delete: async (result: any, req: Request) => {
-              apiEvents.emit(EVENTS.COMPANY_POPULARITY.deleted, result);
-            }
-          },
-          isAuthenticationActivated: env.auth.isAuthenticationActivated
-        })
+        userCrudRoute({ UserModel, apiEvents }),
+        companyCrudRoute({ CompanyModel, apiEvents }),
+        companyPopularityCrudRoute({ CompanyPopularityModel, apiEvents }),
+        companyTypeCrudRoute({ CompanyTypeModel, apiEvents })
       ]
     };
 

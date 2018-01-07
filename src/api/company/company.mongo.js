@@ -6,8 +6,7 @@ import type { Company } from './company';
 export const getCompanyModel = (
   dbConnection: Connection,
   UserModel: Model,
-  CompanyTypeModel: Model,
-  emitRemove: Company => any
+  CompanyTypeModel: Model
 ): Model => {
   const GeocodeSchema = new Schema({
     latitude: { type: Number },
@@ -23,6 +22,7 @@ export const getCompanyModel = (
       trim: true,
       lowercase: true
     },
+    imageCloudId: String,
     imageUrl: String,
     type: { type: Schema.Types.ObjectId, ref: 'CompanyType' },
     siret: {
@@ -60,9 +60,6 @@ export const getCompanyModel = (
 
   CompanySchema.pre('save', preSaveChecks);
   CompanySchema.pre('update', preSaveChecks);
-  CompanySchema.post('remove', function(company) {
-    emitRemove(company);
-  });
 
   return dbConnection.model('Company', CompanySchema);
 };
