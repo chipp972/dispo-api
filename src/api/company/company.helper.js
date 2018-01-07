@@ -1,12 +1,11 @@
 // @flow
-import EventEmitter from 'events';
 import {
   saveLogoInCloudinary,
   deleteFromCloudinary
 } from '../../service/cloudinary/cloudinary';
-import { EVENTS } from '../../service/websocket/websocket.event';
 import { Model } from 'mongoose';
 import type { CrudOptions } from '../../service/crud/crud';
+import type { Company } from './company';
 
 export const updateCompanyAvailability = async ({
   CompanyModel,
@@ -16,17 +15,13 @@ export const updateCompanyAvailability = async ({
 }: {
   CompanyModel: Model,
   id: string,
-  available: boolean,
-  apiEvents: EventEmitter
-}) => {
+  available: boolean
+}): Promise<Company> => {
   try {
     const company = await CompanyModel.findById(id);
     const newCompany = Object.assign(company, { available });
     await newCompany.save();
-    const event = available
-      ? EVENTS.COMPANY.setAvailable
-      : EVENTS.COMPANY.setUnavailable;
-    apiEvents.emit(event, newCompany.toObject());
+    return newCompany.toObject();
   } catch (err) {
     throw err;
   }

@@ -41,20 +41,6 @@ export const companyCrudRoute = ({
     }
   });
 
-  // when the owner set a company available
-  apiEvents.on(EVENTS.COMPANY.setAvailable, (id: string) => {
-    setTimeout(() => {
-      updateCompanyAvailability({
-        CompanyModel,
-        apiEvents,
-        id,
-        available: false
-      })
-        .catch((err: Error) => apiEvents.emit('error', err))
-        .then(() => apiEvents.emit(EVENTS.COMPANY.setUnavailable, id));
-    }, env.switchToUnavailableDelay);
-  });
-
   return crud({
     path: '/company',
     model: CompanyModel,
@@ -65,7 +51,21 @@ export const companyCrudRoute = ({
       },
       update: ({ id, data, user, files }) => {
         uploadCompanyLogo({ id, data, user, files });
-        if (data.available) apiEvents.emit(EVENTS.COMPANY.setAvailable, id);
+        // when the owner set a company available
+        // reset to unvailable after the delay
+        if (data.available) {
+          setTimeout(() => {
+            updateCompanyAvailability({
+              CompanyModel,
+              id,
+              available: false
+            })
+              .then((company: Company) =>
+                apiEvents.emit(EVENTS.COMPANY.updated, company)
+              )
+              .catch((err: Error) => apiEvents.emit('error', err));
+          }, env.switchToUnavailableDelay);
+        }
       }
     },
     after: {
