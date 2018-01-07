@@ -36,7 +36,8 @@ export const getCompanyModel = (
     address: { type: String, required: true, trim: true },
     geoAddress: GeocodeSchema,
     phoneNumber: String,
-    lastUpdate: Date // use this field to determine if company is available
+    available: { type: Boolean, default: false },
+    lastUpdate: Date
   });
 
   const preSaveChecks = async function(next) {

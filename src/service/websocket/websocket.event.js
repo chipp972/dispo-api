@@ -12,7 +12,11 @@ const crudEvents = (modelName: string) => {
 
 export const EVENTS = {
   USER: crudEvents('user'),
-  COMPANY: crudEvents('company'),
+  COMPANY: {
+    ...crudEvents('company'),
+    setAvailable: 'SETAVAILABLE_COMPANY',
+    setUnavailable: 'SETUNAVAILABLE_COMPANY'
+  },
   COMPANY_TYPE: crudEvents('companytype'),
   COMPANY_POPULARITY: crudEvents('companypopularity')
 };

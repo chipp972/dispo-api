@@ -20,6 +20,8 @@ Event types :
 * CREATE
 * EDIT
 * REMOVE
+* SETAVAILABLE (company only)
+* SETUNAVAILABLE (company only)
 
 Data types :
 

@@ -37,5 +37,5 @@ export default {
     user: process.env.MAILGUN_SMTP_LOGIN || '',
     pass: process.env.MAILGUN_SMTP_PASSWORD || ''
   },
-  switchToUnavailableDelay: process.env.SWITCH_TO_UNAVAILABLE || 900
+  switchToUnavailableDelay: parseInt(process.env.SWITCH_TO_UNAVAILABLE, 10) || 900
 };

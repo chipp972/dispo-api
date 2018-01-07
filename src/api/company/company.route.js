@@ -4,37 +4,15 @@ import EventEmitter from 'events';
 import { Model } from 'mongoose';
 import { crud } from '../../service/crud/crud';
 import { EVENTS } from '../../service/websocket/websocket.event';
-import {
-  saveLogoInCloudinary,
-  deleteFromCloudinary
-} from '../../service/cloudinary/cloudinary';
+import { deleteFromCloudinary } from '../../service/cloudinary/cloudinary';
+import { updateCompanyAvailability, uploadCompanyLogo } from './company.helper';
 import env from '../../config/env';
-import type { CompanyType } from '../companytype/companytype';
 import type { Company } from './company';
 import type { User } from '../user/user';
-import type { CrudOptions } from '../../service/crud/crud';
 
 type CompanyCrudRouteOptions = {
   CompanyModel: Model,
   apiEvents: EventEmitter
-};
-
-/**
- * Verify if the logo of the company is already uploaded
- * and delete it then upload the image given
- */
-const uploadCompanyLogo = async ({ id, data, user, files }: CrudOptions) => {
-  delete data.geoAddress; // can't trust client
-  const img = files.companyImage;
-  if (!img) return;
-  if (data.imageCloudId && /cloudinary/.test(data.imageUrl)) {
-    await deleteFromCloudinary({
-      publicId: data.imageCloudId
-    });
-  }
-  const uploadRes = await saveLogoInCloudinary(img.path);
-  data.imageCloudId = uploadRes.public_id;
-  data.imageUrl = uploadRes.secure_url;
 };
 
 export const companyCrudRoute = ({
@@ -63,12 +41,32 @@ export const companyCrudRoute = ({
     }
   });
 
+  // when the owner set a company available
+  apiEvents.on(EVENTS.COMPANY.setAvailable, (id: string) => {
+    setTimeout(() => {
+      updateCompanyAvailability({
+        CompanyModel,
+        apiEvents,
+        id,
+        available: false
+      })
+        .catch((err: Error) => apiEvents.emit('error', err))
+        .then(() => apiEvents.emit(EVENTS.COMPANY.setUnavailable, id));
+    }, env.switchToUnavailableDelay);
+  });
+
   return crud({
     path: '/company',
     model: CompanyModel,
     before: {
-      create: uploadCompanyLogo,
-      update: uploadCompanyLogo
+      create: ({ id, data, user, files }) => {
+        uploadCompanyLogo({ id, data, user, files });
+        delete data.available;
+      },
+      update: ({ id, data, user, files }) => {
+        uploadCompanyLogo({ id, data, user, files });
+        if (data.available) apiEvents.emit(EVENTS.COMPANY.setAvailable, id);
+      }
     },
     after: {
       create: async (result: any, req: Request) => {
