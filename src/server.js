@@ -103,7 +103,10 @@ function handleServerError(server: Server, logger: LoggerInstance) {
       server,
       apiEvents,
       UserModel,
-      AdminModel
+      AdminModel,
+      CompanyModel,
+      CompanyTypeModel,
+      CompanyPopularityModel
     });
 
     handleServerError(server, LOGGER);

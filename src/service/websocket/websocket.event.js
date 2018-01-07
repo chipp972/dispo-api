@@ -4,6 +4,7 @@ const crudEvents = (modelName: string) => {
   const name = modelName.toUpperCase();
   return {
     created: `CREATE_${name}`,
+    read: `READ_${name}`,
     updated: `EDIT_${name}`,
     deleted: `REMOVE_${name}`
   };

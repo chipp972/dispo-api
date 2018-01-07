@@ -1,26 +1,37 @@
 // @flow
 import EventEmitter from 'events';
 import { Model } from 'mongoose';
-import jwt from 'jsonwebtoken';
 import io, { SocketIO } from 'socket.io';
 import { Server } from 'http';
 import { EVENTS } from './websocket.event';
 import LOGGER from '../../config/logger';
 import { forEachObjIndexed } from 'ramda';
-import env from '../../config/env';
 
 export type WebsocketOptions = {
   server: Server,
   apiEvents: EventEmitter,
   UserModel: Model,
-  AdminModel: Model
+  AdminModel: Model,
+  CompanyModel: Model,
+  CompanyTypeModel: Model,
+  CompanyPopularityModel: Model
+};
+
+const addReadHandler = (model, modelName, socket) => {
+  socket.on(EVENTS[modelName].read, async (filters: any) => {
+    const resultList = await model.find(filters);
+    socket.emit(EVENTS[modelName].read, resultList);
+  });
 };
 
 export const initWebsocket = ({
   server,
   apiEvents,
   UserModel,
-  AdminModel
+  AdminModel,
+  CompanyModel,
+  CompanyTypeModel,
+  CompanyPopularityModel
 }: WebsocketOptions): SocketIO.Server => {
   const ws: SocketIO.Server = io(server);
 
@@ -37,6 +48,11 @@ export const initWebsocket = ({
   // client interactions
   ws.on('connection', (socket: SocketIO.Socket) => {
     LOGGER.info('client connected');
+
+    addReadHandler(CompanyModel, 'COMPANY', socket);
+    addReadHandler(CompanyTypeModel, 'COMPANY_TYPE', socket);
+    addReadHandler(CompanyPopularityModel, 'COMPANY_POPULARITY', socket);
+    addReadHandler(UserModel, 'USER', socket);
 
     socket.on('error', (err: Error) => LOGGER.error(err));
     socket.on('close', () => LOGGER.info('client disconnected'));
