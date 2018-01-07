@@ -41,19 +41,6 @@ export const companyCrudRoute = ({
   CompanyModel,
   apiEvents
 }: CompanyCrudRouteOptions): Router => {
-  // on company type delete delete all companies
-  // that have this company type
-  apiEvents.on(
-    EVENTS.COMPANY_TYPE.deleted,
-    async (companyType: CompanyType) => {
-      const companies = await CompanyModel.find({ type: companyType._id });
-      companies.forEach((company: Company) => {
-        company.remove();
-        apiEvents.emit(EVENTS.COMPANY.deleted, company);
-      });
-    }
-  );
-
   // on user delete also delete all his companies
   apiEvents.on(EVENTS.USER.deleted, async (user: User) => {
     const companies = await CompanyModel.find({ owner: user._id });
@@ -63,7 +50,7 @@ export const companyCrudRoute = ({
     });
   });
 
-  // on company delete also delete its image in the cloud
+  // on company delete also delete its image in cloudinary
   apiEvents.on(EVENTS.COMPANY.deleted, async (company: Company) => {
     try {
       const obj = company.toObject ? company.toObject() : company;

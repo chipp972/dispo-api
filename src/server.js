@@ -90,7 +90,7 @@ function handleServerError(server: Server, logger: LoggerInstance) {
         userCrudRoute({ UserModel, apiEvents }),
         companyCrudRoute({ CompanyModel, apiEvents }),
         companyPopularityCrudRoute({ CompanyPopularityModel, apiEvents }),
-        companyTypeCrudRoute({ CompanyTypeModel, apiEvents })
+        companyTypeCrudRoute({ CompanyTypeModel, CompanyModel, apiEvents })
       ]
     };
 
