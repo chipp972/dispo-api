@@ -12,17 +12,16 @@ import env from './config/env';
 import { crud } from './service/crud/crud';
 
 import { initWebsocket } from './service/websocket/websocket';
-import { EVENTS } from './service/websocket/websocket.event';
 
 // auth
 import { getAdminModel } from './service/passport/admin/admin.mongo';
+import { getUserModel } from './service/passport/user/user.mongo';
 import { initAuthRoutes } from './service/passport/auth.route';
 
 // api
 import { getCompanyModel } from './api/company/company.mongo';
 import { getCompanyTypeModel } from './api/companytype/companytype.mongo';
 import { getCompanyPopularityModel } from './api/companypopularity/companypopularity.mongo';
-import { getUserModel } from './api/user/user.mongo';
 import { userCrudRoute } from './api/user/user.route';
 import { companyCrudRoute } from './api/company/company.route';
 import { companyTypeCrudRoute } from './api/companytype/companytype.route';
@@ -73,9 +72,9 @@ function handleServerError(server: Server, logger: LoggerInstance) {
     const mongodb = await initMongoose();
 
     // mongoose models
-    const AdminModel = getAdminModel(mongodb);
-    const CompanyTypeModel = getCompanyTypeModel(mongodb);
+    const AdminUserModel = getAdminModel(mongodb);
     const UserModel = getUserModel(mongodb);
+    const CompanyTypeModel = getCompanyTypeModel(mongodb);
     const CompanyModel = getCompanyModel(mongodb, UserModel, CompanyTypeModel);
     const CompanyPopularityModel = getCompanyPopularityModel(
       mongodb,
@@ -85,7 +84,7 @@ function handleServerError(server: Server, logger: LoggerInstance) {
 
     // express routes
     const appRoutes: AppRoutes = {
-      auth: [initAuthRoutes(UserModel, AdminModel)],
+      auth: [initAuthRoutes({ UserModel, AdminUserModel, apiEvents })],
       api: [
         userCrudRoute({ UserModel, apiEvents }),
         companyCrudRoute({ CompanyModel, apiEvents }),
@@ -95,7 +94,7 @@ function handleServerError(server: Server, logger: LoggerInstance) {
     };
 
     // express app
-    const app = initApp(appRoutes, UserModel, AdminModel);
+    const app = initApp(appRoutes, UserModel, AdminUserModel);
     app.set('env', env.nodeEnv);
     const server = http.createServer(app).listen(env.port.default);
 
@@ -103,7 +102,7 @@ function handleServerError(server: Server, logger: LoggerInstance) {
       server,
       apiEvents,
       UserModel,
-      AdminModel,
+      AdminUserModel,
       CompanyModel,
       CompanyTypeModel,
       CompanyPopularityModel

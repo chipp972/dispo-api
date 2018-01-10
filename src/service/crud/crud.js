@@ -7,10 +7,11 @@ import type { CrudGenOptions } from './crud';
 export const crud = ({
   model,
   responseFormatter,
+  pathSuffixes,
   before,
   after,
   path,
-  isAuthenticationActivated
+  isAuthenticationActivated = true
 }: CrudGenOptions) => {
   const router = Router();
   const operations = generateCrudOperations(model, isAuthenticationActivated);
@@ -19,6 +20,7 @@ export const crud = ({
     generateCrudRoutes({
       operations,
       responseFormatter,
+      pathSuffixes,
       before,
       after
     })

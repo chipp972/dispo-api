@@ -11,7 +11,7 @@ export type WebsocketOptions = {
   server: Server,
   apiEvents: EventEmitter,
   UserModel: Model,
-  AdminModel: Model,
+  AdminUserModel: Model,
   CompanyModel: Model,
   CompanyTypeModel: Model,
   CompanyPopularityModel: Model
@@ -28,7 +28,7 @@ export const initWebsocket = ({
   server,
   apiEvents,
   UserModel,
-  AdminModel,
+  AdminUserModel,
   CompanyModel,
   CompanyTypeModel,
   CompanyPopularityModel

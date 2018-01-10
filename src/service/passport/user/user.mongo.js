@@ -3,7 +3,7 @@ import { Schema, Model, Connection } from 'mongoose';
 import { hashPassword } from './user.helper';
 import type { User } from './user';
 
-export const getUserModel = (dbConnection: Connection): Model<User> => {
+export const getUserModel = (dbConnection: Connection): Model => {
   const UserSchema = new Schema({
     email: {
       type: String,

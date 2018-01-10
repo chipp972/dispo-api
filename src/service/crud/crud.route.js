@@ -68,13 +68,14 @@ export const generateRoute = ({
 export const generateCrudRoutes: ExpressCrudGenerator = ({
   operations,
   responseFormatter,
+  pathSuffixes = {},
   before = {},
   after = {}
 }): Router => {
   const router = Router();
   const formatResponse = responseFormatter || defaultResponseFormatter;
 
-  router.route('/').get(
+  router.route('/' + pathSuffixes.getAll).get(
     generateRoute({
       operation: operations.getAll,
       status: 200,
@@ -83,7 +84,7 @@ export const generateCrudRoutes: ExpressCrudGenerator = ({
     })
   );
 
-  router.route('/').post(
+  router.route('/' + pathSuffixes.create).post(
     generateRoute({
       operation: operations.create,
       status: 201,

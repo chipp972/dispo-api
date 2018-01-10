@@ -29,6 +29,11 @@ export type CrudAfterObject = {
   delete: CrudAfterMiddleware
 };
 
+export type PathSuffixes = {
+  getAll: string,
+  create: string,
+};
+
 export type Middleware = (
   req: Request,
   res: Response,
@@ -43,17 +48,19 @@ export type MongooseCrudGenerator = (
 ) => CrudOperations;
 
 export type CrudGenOptions = {
+  path: string,
   model: Model,
   responseFormatter?: Middleware,
-  before: CrudOperations,
-  after: CrudAfterObject,
-  path: string,
-  isAuthenticationActivated: boolean
+  pathSuffixes?: PathSuffixes,
+  before?: CrudOperations,
+  after?: CrudAfterObject,
+  isAuthenticationActivated?: boolean
 };
 
 export type ExpressCrudGenerator = ({
   operations: CrudOperations,
-  responseFormatter: Middleware,
-  before: CrudOperations,
-  after: CrudAfterObject
+  responseFormatter?: Middleware,
+  pathSuffixes?: PathSuffixes,
+  before?: CrudOperations,
+  after?: CrudAfterObject
 }) => Router;

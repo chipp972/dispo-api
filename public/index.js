@@ -39,9 +39,12 @@ export type AuthAPI = {
     authenticate: ({ email: string, code: string }) => Promise<AuthResponse>
   },
   user: {
-    facebookAuth: any,
-    googleAuth: any,
-    classicAuth: any
+    register: (UserData) => Promise<any>,
+    login: ({ email: string, password: string }) => Promise<AuthResponse>,
+    logout: ({ userId: string }) => Promise<any>,
+    facebook: any,
+    google: any,
+    classic: any
   }
 };
 
@@ -115,7 +118,7 @@ export function fetchBasic(
       return fetchFunction(`${baseUrl}${path}`, {
         method,
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
           'Content-Type': !isForm && 'application/json',
           ...headers
         },
@@ -169,7 +172,7 @@ export const authAPI = (fetchFunction: FetchFunction, url: string): AuthAPI => {
           path: '/auth/admin/authenticate',
           data
         }),
-      logout: (tokenId): Promise<{ success: boolean }> =>
+      logout: (tokenId: string): Promise<{ success: boolean }> =>
         getAPIData({
           method: 'POST',
           path: '/auth/admin/logout',
@@ -177,9 +180,34 @@ export const authAPI = (fetchFunction: FetchFunction, url: string): AuthAPI => {
         })
     },
     user: {
-      facebookAuth: undefined,
-      googleAuth: undefined,
-      classicAuth: undefined
+      register: (data: UserData): Promise<any> =>
+        getAPIData({
+          method: 'POST',
+          path: '/auth/user/register',
+          data
+        }),
+      login: (data: { email: string, password: string }): Promise<any> =>
+        getAPIData({
+          method: 'POST',
+          path: '/auth/user/login',
+          data
+        }),
+      logout: (userId: string): Promise<any> =>
+        getAPIData({
+          method: 'POST',
+          path: '/auth/user/logout',
+          data: { userId }
+        }),
+      facebook: {
+        path: '/auth/user/facebook/login',
+        callback: '/auth/user/facebook/callback',
+        method: 'POST'
+      },
+      google: {
+        path: '/auth/user/google/login',
+        callback: '/auth/user/google/callback',
+        method: 'POST'
+      }
     }
   };
 };

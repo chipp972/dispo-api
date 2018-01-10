@@ -6,12 +6,13 @@ import env from '../../../config/env';
 import { generate } from 'shortid';
 import moment from 'moment-timezone';
 import { passportRoutes } from '../passport.constant';
+import { handleUnauthorized } from '../../express/route.helper';
 import type { Model } from 'mongoose';
 import type { AuthResponse, PasswordLessStartResponse } from './admin';
 
 moment.locale('fr');
 
-export function initAdminAuthRoutes(UserModel: Model, AdminUserModel: Model) {
+export function initAdminAuthRoutes(AdminUserModel: Model) {
   const router = Router();
   router.post(
     passportRoutes.admin.sendCode.path,
@@ -42,9 +43,6 @@ export function initAdminAuthRoutes(UserModel: Model, AdminUserModel: Model) {
     }
   );
 
-  const handleUnauthorized = (req: Request, res: Response) =>
-    formatResponse(res, 403, { message: 'unauthorized access' });
-
   router
     .route(passportRoutes.admin.authenticate.path)
     .post(async (req: Request, res: Response, next: NextFunction) => {
@@ -63,7 +61,9 @@ export function initAdminAuthRoutes(UserModel: Model, AdminUserModel: Model) {
           res.status(403);
           return next(new Error('unauthorized access'));
         }
-        const token = jwt.sign(admin.toJSON(), env.auth.secretOrKey);
+        const token = jwt.sign(admin.toJSON(), env.auth.secretOrKey, {
+          expiresIn: env.auth.admin.sessionExpiration
+        });
         const data: AuthResponse = {
           tokenId: admin._id,
           token,
