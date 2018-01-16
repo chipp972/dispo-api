@@ -1,5 +1,6 @@
 // @flow
 import { Request, Response, NextFunction } from 'express';
+import { UnauthorizedAccessError } from '../../config/custom.errors';
 
 type FormatResponseOptions = {
   res: Response,
@@ -21,10 +22,4 @@ export const handleUnauthorized = (
   req: Request,
   res: Response,
   next: NextFunction
-) =>
-  formatResponse({
-    res,
-    success: false,
-    status: 403,
-    data: { message: 'unauthorized access' }
-  });
+) => next(new UnauthorizedAccessError());

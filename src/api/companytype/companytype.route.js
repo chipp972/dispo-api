@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import { crud } from '../../service/crud/crud';
 import { EVENTS } from '../../service/websocket/websocket.event';
 import env from '../../config/env';
+import { checkPermission } from '../api.helper';
 import type { Company } from '../company/company';
 
 type CompanyTypeCrudRouteOptions = {
@@ -21,6 +22,11 @@ export const companyTypeCrudRoute = ({
   return crud({
     path: '/companytype',
     model: CompanyTypeModel,
+    before: {
+      create: checkPermission,
+      update: checkPermission,
+      delete: checkPermission
+    },
     after: {
       create: async (result: any, req: Request) => {
         apiEvents.emit(EVENTS.COMPANY_TYPE.created, result);
@@ -48,7 +54,6 @@ export const companyTypeCrudRoute = ({
         }
         apiEvents.emit(EVENTS.COMPANY_TYPE.deleted, result);
       }
-    },
-    isAuthenticationActivated: env.auth.isAuthenticationActivated
+    }
   });
 };

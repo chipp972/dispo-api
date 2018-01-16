@@ -6,11 +6,15 @@ import type {
 import type {
   User as U,
   UserData as UData
-} from '../src/api/user/user.js.flow';
+} from '../src/service/passport/user/user.js.flow';
 import type {
   CompanyType as CompType,
   CompanyTypeData as CompTypeData
 } from '../src/api/companytype/companytype.js.flow';
+import type {
+  CompanyPopularity as CompPop,
+  CompanyPopularityData as CompPopData
+} from '../src/api/companypopularity/companypopularity.js.flow';
 import type {
   AuthResponse,
   PasswordLessStartResponse
@@ -22,8 +26,7 @@ export type FetchOptions = {
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   path: string,
   data?: any,
-  headers?: { [key: string]: string },
-  isForm?: boolean
+  headers?: { [key: string]: string }
 };
 
 export interface FetchWithTokenOptions extends FetchOptions {
@@ -36,15 +39,15 @@ export type PasswordLessStartRes = PasswordLessStartResponse;
 export type AuthAPI = {
   admin: {
     sendCode: ({ email: string }) => Promise<PasswordLessStartRes>,
-    authenticate: ({ email: string, code: string }) => Promise<AuthResponse>
+    authenticate: ({ email: string, code: string }) => Promise<AuthResponse>,
+    logout: (tokenId: string) => Promise<{ success: boolean }>
   },
   user: {
-    register: (UserData) => Promise<any>,
+    register: UserData => Promise<*>,
     login: ({ email: string, password: string }) => Promise<AuthResponse>,
-    logout: ({ userId: string }) => Promise<any>,
+    logout: ({ userId: string }) => Promise<{ success: boolean }>,
     facebook: any,
-    google: any,
-    classic: any
+    google: any
   }
 };
 
@@ -54,13 +57,15 @@ export type User = U;
 export type UserData = UData;
 export type CompanyType = CompType;
 export type CompanyTypeData = CompTypeData;
+export type CompanyPopularity = CompPop;
+export type CompanyPopularityData = CompPopData;
 
 export type CrudOperations<T1, T2> = {
   getAll: () => Promise<T2[]>,
   get: (id: string) => Promise<T2>,
   create: (data: T1) => Promise<T2>,
-  edit: (id: string, field: any) => Promise<T2>,
-  remove: (id: string) => Promise<T2>
+  edit: (id: string, field: *) => Promise<T2>,
+  remove: (id: string, data: T2) => Promise<T2>
 };
 
 export type DataAPI = {
@@ -90,16 +95,17 @@ const generateCrudOperations = function<T1, T2>(
         method: 'POST',
         data
       }),
-    edit: (id: string, fields: any): Promise<T2> =>
+    edit: (id: string, fields: *): Promise<T2> =>
       getAPIData({
         path: `${basePath}/${id}`,
         method: 'PATCH',
         data: fields
       }),
-    remove: (id: string): Promise<T2> =>
+    remove: (id: string, data: *): Promise<T2> =>
       getAPIData({
         path: `${basePath}/${id}`,
-        method: 'DELETE'
+        method: 'DELETE',
+        data
       })
   };
 };
@@ -111,6 +117,14 @@ export function fetchBasic(
 ) {
   return async ({ method, path, data, headers }: FetchOptions): Promise<*> =>
     new Promise((resolve, reject) => {
+      const baseHeaders = isForm
+        ? {
+            Accept: 'application/json'
+          }
+        : {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          };
       const body =
         method === 'HEAD' || method === 'GET' || !data
           ? null
@@ -118,8 +132,7 @@ export function fetchBasic(
       return fetchFunction(`${baseUrl}${path}`, {
         method,
         headers: {
-          Accept: 'application/json',
-          'Content-Type': !isForm && 'application/json',
+          ...baseHeaders,
           ...headers
         },
         body
@@ -133,16 +146,11 @@ export function fetchBasic(
 export const fetchWithToken = (
   fetchFunction: FetchFunction,
   baseUrl: string,
-  token: string
-) => async ({
-  data,
-  headers,
-  method,
-  path,
-  isForm
-}: FetchOptions): Promise<*> =>
+  token: string,
+  isForm: boolean = true
+) => async ({ data, headers, method, path }: FetchOptions): Promise<*> =>
   new Promise((resolve, reject) => {
-    const fetchAPI = fetchBasic(fetchFunction, baseUrl, isForm || true);
+    const fetchAPI = fetchBasic(fetchFunction, baseUrl, isForm);
     fetchAPI({
       method,
       path,
@@ -154,25 +162,22 @@ export const fetchWithToken = (
   });
 
 export const authAPI = (fetchFunction: FetchFunction, url: string): AuthAPI => {
-  const getAPIData = fetchBasic(fetchFunction, url, true);
+  const getAPIData = fetchBasic(fetchFunction, url, false);
   return {
     admin: {
-      sendCode: (data: { email: string }): Promise<PasswordLessStartRes> =>
+      sendCode: (data: { email: string }) =>
         getAPIData({
           method: 'POST',
           path: '/auth/admin/start',
           data
         }),
-      authenticate: (data: {
-        email: string,
-        code: string
-      }): Promise<AuthResponse> =>
+      authenticate: (data: { email: string, code: string }) =>
         getAPIData({
           method: 'POST',
           path: '/auth/admin/authenticate',
           data
         }),
-      logout: (tokenId: string): Promise<{ success: boolean }> =>
+      logout: (tokenId: string) =>
         getAPIData({
           method: 'POST',
           path: '/auth/admin/logout',
@@ -180,19 +185,19 @@ export const authAPI = (fetchFunction: FetchFunction, url: string): AuthAPI => {
         })
     },
     user: {
-      register: (data: UserData): Promise<any> =>
+      register: (data: UserData) =>
         getAPIData({
           method: 'POST',
           path: '/auth/user/register',
           data
         }),
-      login: (data: { email: string, password: string }): Promise<any> =>
+      login: (data: { email: string, password: string }) =>
         getAPIData({
           method: 'POST',
           path: '/auth/user/login',
-          data
+          data: JSON.stringify(data)
         }),
-      logout: (userId: string): Promise<any> =>
+      logout: (userId: string) =>
         getAPIData({
           method: 'POST',
           path: '/auth/user/logout',
@@ -215,7 +220,7 @@ export const authAPI = (fetchFunction: FetchFunction, url: string): AuthAPI => {
 export const dataAPI = (fetchFunction: FetchFunction, url: string) => (
   token: string
 ): DataAPI => {
-  const getAPIData = fetchWithToken(fetchFunction, url, token);
+  const getAPIData = fetchWithToken(fetchFunction, url, token, true);
   return {
     company: {
       ...generateCrudOperations(getAPIData, '/api/company'),

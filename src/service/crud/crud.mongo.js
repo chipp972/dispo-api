@@ -1,29 +1,18 @@
 // @flow
 import { Model } from 'mongoose';
-import type { ReqUser, CrudOperations, MongooseCrudGenerator } from './crud';
+import type { CrudOperations, MongooseCrudGenerator } from './crud';
 
-export const toRawObject = (obj: any) => obj.toObject();
+export const toRawObject = (obj: any) => (obj.toObject ? obj.toObject() : obj);
 
 export const toRawObjectList = (arr: any[]) => arr.map(toRawObject);
-
-export const isUserAuthorized = (
-  obj: any,
-  user: ReqUser,
-  isAuthenticationActivated: boolean
-): boolean =>
-  isAuthenticationActivated
-    ? user.role === 'admin' || obj.owner === user._id || obj._id === user._id
-    : true;
 
 /**
  * generate mongoose operations
  * @param {Model} model
- * @param {boolean} isAuthenticationActivated
  * @return {CrudOperations}
  */
 export const generateCrudOperations: MongooseCrudGenerator = (
-  model: Model,
-  isAuthenticationActivated: boolean = true
+  model: Model
 ): CrudOperations => ({
   getAll: async (): Promise<any[]> => {
     const objList = await model.find({});
@@ -39,9 +28,6 @@ export const generateCrudOperations: MongooseCrudGenerator = (
   },
   update: async ({ id, data, user }): Promise<*> => {
     const obj = await model.findById(id);
-    if (!isUserAuthorized(obj, user, isAuthenticationActivated)) {
-      throw new Error('unauthorized operation');
-    }
     delete data._id;
     delete data.__v;
     const newObj = Object.assign(obj, data);
@@ -50,8 +36,6 @@ export const generateCrudOperations: MongooseCrudGenerator = (
   },
   delete: async ({ id, user }): Promise<*> => {
     const obj = await model.findById(id);
-    if (!isUserAuthorized(obj, user, isAuthenticationActivated))
-      throw new Error('unauthorized operation');
     await obj.remove();
     return toRawObject(obj);
   }

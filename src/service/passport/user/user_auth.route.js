@@ -2,11 +2,13 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import moment from 'moment';
-import env from '../../../config/env';
 import { passportRoutes } from '../passport.constant';
 import { formatResponse, handleUnauthorized } from '../../express/route.helper';
 import { isValidPassword } from './user.helper';
 import { filterProperty } from '../../../helper';
+import env from '../../../config/env';
+import LOGGER from '../../../config/logger';
+import { AuthenticationFailedError } from '../../../config/custom.errors';
 import type { Model } from 'mongoose';
 
 type UserAuthRouteOptions = {
@@ -17,6 +19,8 @@ export const initUserAuthRoutes = ({
   UserModel
 }: UserAuthRouteOptions): Router => {
   const router = Router();
+
+  // register route
   router.post(
     passportRoutes.user.register.path,
     async (req: Request, res: Response, next: NextFunction) => {
@@ -25,7 +29,7 @@ export const initUserAuthRoutes = ({
         return formatResponse({
           res,
           success: true,
-          data: filterProperty('password', user),
+          data: filterProperty('password', user.toObject()),
           status: 201
         });
       } catch (err) {
@@ -34,15 +38,23 @@ export const initUserAuthRoutes = ({
     }
   );
 
+  // login route
   router
     .post(
       passportRoutes.user.login.path,
       async (req: Request, res: Response, next: NextFunction) => {
         try {
           const { email, password } = req.body;
-          const user = await UserModel.find({ email });
+          const user = await UserModel.findOne({ email });
+          if (!user) {
+            LOGGER.error('User not found', 'User Login');
+            return next(new AuthenticationFailedError());
+          }
           const isValid = await isValidPassword(user, password);
-          if (!isValid) return next();
+          if (!isValid) {
+            LOGGER.error('Invalid password', 'User Login');
+            return next(new AuthenticationFailedError());
+          }
           const token = jwt.sign(user.toJSON(), env.auth.secretOrKey, {
             expiresIn: env.auth.sessionExpiration
           });
@@ -55,6 +67,7 @@ export const initUserAuthRoutes = ({
           };
           return formatResponse({ res, data });
         } catch (err) {
+          LOGGER.error(err, 'User Login');
           next(err);
         }
       }

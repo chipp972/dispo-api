@@ -37,15 +37,18 @@ export const uploadCompanyLogo = async ({
   user,
   files
 }: CrudOptions) => {
-  delete data.geoAddress; // can't trust client
-  const img = files && files.companyImage;
-  if (!img) return;
-  if (data.imageCloudId && /cloudinary/.test(data.imageUrl)) {
-    await deleteFromCloudinary({
-      publicId: data.imageCloudId
-    });
+  try {
+    const img = files && files.companyImage;
+    if (!img) return;
+    if (data.imageCloudId && /cloudinary/.test(data.imageUrl)) {
+      await deleteFromCloudinary({
+        publicId: data.imageCloudId
+      });
+    }
+    const uploadRes = await saveLogoInCloudinary(img.path);
+    data.imageCloudId = uploadRes.public_id;
+    data.imageUrl = uploadRes.secure_url;
+  } catch (err) {
+    throw err;
   }
-  const uploadRes = await saveLogoInCloudinary(img.path);
-  data.imageCloudId = uploadRes.public_id;
-  data.imageUrl = uploadRes.secure_url;
 };

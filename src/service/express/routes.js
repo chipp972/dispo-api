@@ -13,7 +13,7 @@ export type AppRoutes = {
  * @param {AppRoutes} appRoutes
  */
 export function initRoutes(app: Application, { auth, api }: AppRoutes): void {
-  auth.forEach((route: Router) => app.use('/', route));
+  auth.forEach((route: Router) => app.use(route));
 
   api.forEach((route: Router) => app.use('/api', route));
 

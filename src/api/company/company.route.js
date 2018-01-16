@@ -7,8 +7,8 @@ import { EVENTS } from '../../service/websocket/websocket.event';
 import { deleteFromCloudinary } from '../../service/cloudinary/cloudinary';
 import { updateCompanyAvailability, uploadCompanyLogo } from './company.helper';
 import env from '../../config/env';
+import { checkPermission } from '../api.helper';
 import type { Company } from './company';
-import type { User } from '../user/user';
 
 type CompanyCrudRouteOptions = {
   CompanyModel: Model,
@@ -20,7 +20,7 @@ export const companyCrudRoute = ({
   apiEvents
 }: CompanyCrudRouteOptions): Router => {
   // on user delete also delete all his companies
-  apiEvents.on(EVENTS.USER.deleted, async (user: User) => {
+  apiEvents.on(EVENTS.USER.deleted, async (user: any) => {
     const companies = await CompanyModel.find({ owner: user._id });
     companies.forEach((company: Company) => {
       company.remove();
@@ -45,12 +45,16 @@ export const companyCrudRoute = ({
     path: '/company',
     model: CompanyModel,
     before: {
-      create: ({ id, data, user, files }) => {
-        uploadCompanyLogo({ id, data, user, files });
+      create: async ({ id, data, user, files }) => {
+        checkPermission({ id, data, user });
+        await uploadCompanyLogo({ id, data, user, files });
+        delete data.geoAddress;
         delete data.available;
       },
-      update: ({ id, data, user, files }) => {
-        uploadCompanyLogo({ id, data, user, files });
+      update: async ({ id, data, user, files }) => {
+        delete data.geoAddress;
+        checkPermission({ id, data, user });
+        await uploadCompanyLogo({ id, data, user, files });
         // when the owner set a company available
         // reset to unvailable after the delay
         if (data.available) {
@@ -66,7 +70,8 @@ export const companyCrudRoute = ({
               .catch((err: Error) => apiEvents.emit('error', err));
           }, env.switchToUnavailableDelay);
         }
-      }
+      },
+      delete: checkPermission
     },
     after: {
       create: async (result: any, req: Request) => {
@@ -78,7 +83,6 @@ export const companyCrudRoute = ({
       delete: async (result: any, req: Request) => {
         apiEvents.emit(EVENTS.COMPANY.deleted, result);
       }
-    },
-    isAuthenticationActivated: env.auth.isAuthenticationActivated
+    }
   });
 };

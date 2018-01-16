@@ -36,7 +36,7 @@ export const generateRoute = ({
   operation,
   status,
   before = (options: CrudOptions) => Promise.resolve(),
-  after = (obj: any) => Promise.resolve(obj)
+  after = (result: any, req: Request) => Promise.resolve(result)
 }: {
   operation: CrudOperation,
   status: number,
@@ -68,14 +68,13 @@ export const generateRoute = ({
 export const generateCrudRoutes: ExpressCrudGenerator = ({
   operations,
   responseFormatter,
-  pathSuffixes = {},
   before = {},
   after = {}
 }): Router => {
   const router = Router();
   const formatResponse = responseFormatter || defaultResponseFormatter;
 
-  router.route('/' + pathSuffixes.getAll).get(
+  router.route('/').get(
     generateRoute({
       operation: operations.getAll,
       status: 200,
@@ -84,7 +83,7 @@ export const generateCrudRoutes: ExpressCrudGenerator = ({
     })
   );
 
-  router.route('/' + pathSuffixes.create).post(
+  router.route('/').post(
     generateRoute({
       operation: operations.create,
       status: 201,

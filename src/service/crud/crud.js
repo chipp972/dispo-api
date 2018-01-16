@@ -7,20 +7,17 @@ import type { CrudGenOptions } from './crud';
 export const crud = ({
   model,
   responseFormatter,
-  pathSuffixes,
   before,
   after,
-  path,
-  isAuthenticationActivated = true
+  path
 }: CrudGenOptions) => {
   const router = Router();
-  const operations = generateCrudOperations(model, isAuthenticationActivated);
+  const operations = generateCrudOperations(model);
   router.use(
     path,
     generateCrudRoutes({
       operations,
       responseFormatter,
-      pathSuffixes,
       before,
       after
     })

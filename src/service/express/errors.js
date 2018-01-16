@@ -2,6 +2,7 @@
 import { Application, Request, Response, NextFunction } from 'express';
 import env from '../../config/env';
 import LOGGER from '../../config/logger';
+import { NotFoundError } from '../../config/custom.errors';
 import { AssertionError } from 'assert';
 
 export const initErrorHandlers = (app: Application) => {
@@ -9,9 +10,7 @@ export const initErrorHandlers = (app: Application) => {
 
   /* Handle 404 */
   app.all('*', (req: Request, res: Response, next: NextFunction) => {
-    const err = new Error('Not found');
-    res.status(404);
-    next(err);
+    next(new NotFoundError());
   });
 
   // logger
@@ -34,7 +33,10 @@ export const initErrorHandlers = (app: Application) => {
   /* default error handlers */
   app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     const stack = isDev ? err.stack : '';
-    return res.status(res.statusCode || 500).json({
+    const statusCode = err.status
+      ? err.status
+      : res.statusCode ? res.statusCode : 500;
+    return res.status(statusCode).json({
       message: err.message,
       stack,
       success: false

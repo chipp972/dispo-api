@@ -6,6 +6,7 @@ import passport from 'passport';
 import cors, { CorsOptions } from 'cors';
 import { configurePassport } from '../passport/passport.config';
 import env from '../../config/env';
+import { AuthenticationError } from '../../config/custom.errors';
 import { Application, Request, Response, NextFunction } from 'express';
 import { Model } from 'mongoose';
 import formData from 'express-form-data';
@@ -54,18 +55,17 @@ export default function applyMiddlewares(
 
   // authentication
   if (env.auth.isAuthenticationActivated) {
+    passport.use(configurePassport({ UserModel, AdminModel }));
     app.use(passport.initialize());
-    configurePassport(UserModel, AdminModel);
-    app.use(
-      '/api',
-      passport.authenticate('jwt', {
-        session: false,
-        failureRedirect: '/auth/failure'
-      }),
-      (req: Request, res: Response, next: NextFunction) => {
-        next();
-      }
-    );
+    app.use('/api', (req: Request, res: Response, next: NextFunction) => {
+      passport.authenticate('jwt', (err, user, info) => {
+        if (err) {
+          return next(new AuthenticationError());
+        }
+        req.user = user;
+        return next();
+      })(req, res, next);
+    });
   }
 
   return app;

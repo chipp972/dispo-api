@@ -22,7 +22,7 @@ import { initAuthRoutes } from './service/passport/auth.route';
 import { getCompanyModel } from './api/company/company.mongo';
 import { getCompanyTypeModel } from './api/companytype/companytype.mongo';
 import { getCompanyPopularityModel } from './api/companypopularity/companypopularity.mongo';
-import { userCrudRoute } from './api/user/user.route';
+import { userCrudRoute } from './service/passport/user/user.route';
 import { companyCrudRoute } from './api/company/company.route';
 import { companyTypeCrudRoute } from './api/companytype/companytype.route';
 import { companyPopularityCrudRoute } from './api/companypopularity/companypopularity.route';

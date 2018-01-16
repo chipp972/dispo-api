@@ -27,8 +27,13 @@ export const getUserModel = (dbConnection: Connection): Model => {
   const preSaveChecks = async function(next) {
     try {
       const user: User = this || {};
-      const hash = await hashPassword(user.password);
-      user.password = hash;
+      console.log(user, 'user');
+      // FIXME: only hash password if it is the first time
+      // on update, hash user.newPassword and put it in password if it's not empty
+      if (user.password) {
+        const hash = await hashPassword(user.password);
+        user.password = hash;
+      }
       return next();
     } catch (err) {
       return next(err);

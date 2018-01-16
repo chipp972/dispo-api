@@ -62,5 +62,12 @@ export const getCompanyModel = (
   CompanySchema.pre('save', preSaveChecks);
   CompanySchema.pre('update', preSaveChecks);
 
+  CompanySchema.post('save', async function(err, doc, next) {
+    // TODO: reformat errors
+    console.log(err, '********************');
+    console.log('company.mongo');
+    next(err);
+  });
+
   return dbConnection.model('Company', CompanySchema);
 };
