@@ -74,6 +74,12 @@ export type DataAPI = {
   companyType: CrudOperations<CompanyTypeData, CompanyType>
 };
 
+export const toFormData = (obj: any) => {
+  const formData = new FormData();
+  Object.entries(obj).forEach(([key, value]) => formData.append(key, value));
+  return formData;
+};
+
 const generateCrudOperations = function<T1, T2>(
   getAPIData: (options: FetchOptions) => Promise<*>,
   basePath: string
@@ -128,7 +134,7 @@ export function fetchBasic(
       const body =
         method === 'HEAD' || method === 'GET' || !data
           ? null
-          : isForm ? data : JSON.stringify(data);
+          : isForm ? toFormData(data) : JSON.stringify(data);
       return fetchFunction(`${baseUrl}${path}`, {
         method,
         headers: {
