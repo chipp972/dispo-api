@@ -11,6 +11,13 @@ export type CrudOptions = {
   files?: { [filename: string]: { path: string } }
 };
 
+export type Middleware = (Request, Response, NextFunction) => any;
+
+export type PreResult = {
+  success: boolean,
+  error?: Error
+};
+
 export type CrudOperation = CrudOptions => Promise<any>;
 
 export type CrudOperations = {
@@ -21,6 +28,10 @@ export type CrudOperations = {
   delete: CrudOptions => Promise<any>
 };
 
+export type CrudAfterMiddleware = (result: *, req: Request) => Promise<*>;
+
+export type CrudBeforeMiddleware = CrudOptions => Promise<PreResult>;
+
 export type CrudAfterObject = {
   getAll: CrudAfterMiddleware,
   getById: CrudAfterMiddleware,
@@ -29,13 +40,13 @@ export type CrudAfterObject = {
   delete: CrudAfterMiddleware
 };
 
-export type Middleware = (
-  req: Request,
-  res: Response,
-  next?: NextFunction
-) => any;
-
-export type CrudAfterMiddleware = (result: any, req: Request) => Promise<any>;
+export type CrudBeforeObject = {
+  getAll: CrudBeforeMiddleware,
+  getById: CrudBeforeMiddleware,
+  create: CrudBeforeMiddleware,
+  update: CrudBeforeMiddleware,
+  delete: CrudBeforeMiddleware
+};
 
 export type MongooseCrudGenerator = (model: Model) => CrudOperations;
 
@@ -43,13 +54,13 @@ export type CrudGenOptions = {
   path: string,
   model: Model,
   responseFormatter?: Middleware,
-  before?: CrudOperations,
+  before?: CrudBeforeObject,
   after?: CrudAfterObject
 };
 
 export type ExpressCrudGenerator = ({
   operations: CrudOperations,
   responseFormatter?: Middleware,
-  before?: CrudOperations,
+  before?: CrudBeforeObject,
   after?: CrudAfterObject
 }) => Router;

@@ -3,22 +3,10 @@ import { Request, Response, NextFunction, Router } from 'express';
 import type {
   CrudOperation,
   CrudOptions,
-  Middleware,
   CrudAfterMiddleware,
+  CrudBeforeMiddleware,
   ExpressCrudGenerator
 } from './crud';
-
-export const errorHandlerWrapper = (middleware: Middleware) => async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    await middleware(req, res, next);
-  } catch (err) {
-    next(err);
-  }
-};
 
 export const defaultResponseFormatter = (req: Request, res: Response): void =>
   res
@@ -35,30 +23,34 @@ export const defaultResponseFormatter = (req: Request, res: Response): void =>
 export const generateRoute = ({
   operation,
   status,
-  before = (options: CrudOptions) => Promise.resolve(),
+  before = (options: CrudOptions) =>
+    Promise.resolve({ success: true, error: new Error() }),
   after = (result: any, req: Request) => Promise.resolve(result)
 }: {
   operation: CrudOperation,
   status: number,
-  before: CrudOperation,
+  before: CrudBeforeMiddleware,
   after: CrudAfterMiddleware
 }) =>
-  errorHandlerWrapper(
-    async (req: Request, res: Response, next: NextFunction) => {
+  async function(req: Request, res: Response, next: NextFunction) {
+    try {
       const options: CrudOptions = {
         id: req.params.id || (req.body && req.body._id) || '',
         data: req.body || {},
         user: req.user || { _id: '' },
         files: req.files || {}
       };
-      await before(options);
+      const { error, success } = await before(options);
+      if (!success && error) return next(error);
       const result = await operation(options);
       const modifiedResult = await after(result, req);
       res.data = modifiedResult !== undefined ? modifiedResult : result;
       res.status(res.statusCode || status);
-      next();
+      return next();
+    } catch (err) {
+      return next(err);
     }
-  );
+  };
 
 /**
  * Create all routes CRUD operations

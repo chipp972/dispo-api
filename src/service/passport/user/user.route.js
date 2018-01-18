@@ -36,15 +36,21 @@ export const userCrudRoute = ({
     before: {
       // check old password if the user wants to change password
       update: async ({ id, data, user }) => {
-        checkPermission({ id, data, user });
-        // TODO: validate data.password
-        if (!data.password) return;
-        const objUser = await UserModel.findById(id);
-        const isValidOldPassword = await isValidPassword(
-          objUser,
-          data.oldPassword
-        );
-        if (!isValidOldPassword) throw new InvalidPasswordError();
+        try {
+          const resPerm = checkPermission({ id, data, user });
+          if (!resPerm.success) throw resPerm.error;
+          // TODO: validate data.password
+          if (!data.password) return;
+          const objUser = await UserModel.findById(id);
+          const isValidOldPassword = await isValidPassword(
+            objUser,
+            data.oldPassword
+          );
+          if (!isValidOldPassword) throw new InvalidPasswordError();
+          return { success: true };
+        } catch (error) {
+          return { success: false, error };
+        }
       },
       delete: checkPermission
     },

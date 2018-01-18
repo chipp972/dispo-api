@@ -23,3 +23,13 @@ export const handleUnauthorized = (
   res: Response,
   next: NextFunction
 ) => next(new UnauthorizedAccessError());
+
+export const errorHandlerWrapper = (
+  middleware: (Request, Response, NextFunction) => any
+) => async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await middleware(req, res, next);
+  } catch (err) {
+    next(err);
+  }
+};
