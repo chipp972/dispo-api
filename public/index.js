@@ -195,7 +195,7 @@ export const authAPI = (fetchFunction: FetchFunction, url: string): AuthAPI => {
         getAPIData({
           method: 'POST',
           path: '/auth/user/login',
-          data: JSON.stringify(data)
+          data
         }),
       logout: (userId: string) =>
         getAPIData({

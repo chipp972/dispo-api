@@ -64,7 +64,7 @@ export const getCompanyModel = (
 
   CompanySchema.post('save', async function(err, doc, next) {
     // TODO: reformat errors
-    console.log(err, '********************');
+    console.log(err.message, '********************');
     console.log('company.mongo');
     next(err);
   });
