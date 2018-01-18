@@ -55,10 +55,10 @@ export default function applyMiddlewares(
 
   // authentication
   if (env.auth.isAuthenticationActivated) {
-    passport.use(configurePassport({ UserModel, AdminModel }));
-    app.use(passport.initialize());
+    const pass = passport.use(configurePassport({ UserModel, AdminModel }));
+    app.use(pass.initialize());
     app.use('/api', (req: Request, res: Response, next: NextFunction) => {
-      passport.authenticate('jwt', (err, user, info) => {
+      pass.authenticate('jwt', (err, user, info) => {
         if (err) {
           return next(new AuthenticationError());
         }

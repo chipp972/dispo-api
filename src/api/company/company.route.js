@@ -46,29 +46,43 @@ export const companyCrudRoute = ({
     model: CompanyModel,
     before: {
       create: async ({ id, data, user, files }) => {
-        checkPermission({ id, data, user });
-        await uploadCompanyLogo({ id, data, user, files });
-        delete data.geoAddress;
-        delete data.available;
+        try {
+          const resPerm = checkPermission({ id, data, user });
+          if (!resPerm.success) return resPerm;
+          const resUpload = await uploadCompanyLogo({ id, data, user, files });
+          if (!resUpload.success) return resUpload;
+          delete data.geoAddress;
+          delete data.available;
+          return { success: true };
+        } catch (error) {
+          return { success: false, error };
+        }
       },
       update: async ({ id, data, user, files }) => {
-        delete data.geoAddress;
-        checkPermission({ id, data, user });
-        await uploadCompanyLogo({ id, data, user, files });
-        // when the owner set a company available
-        // reset to unvailable after the delay
-        if (data.available) {
-          setTimeout(() => {
-            updateCompanyAvailability({
-              CompanyModel,
-              id,
-              available: false
-            })
-              .then((company: Company) =>
-                apiEvents.emit(EVENTS.COMPANY.updated, company)
-              )
-              .catch((err: Error) => apiEvents.emit('error', err));
-          }, env.switchToUnavailableDelay);
+        try {
+          delete data.geoAddress;
+          const resPerm = checkPermission({ id, data, user });
+          if (!resPerm.success) return resPerm;
+          const resUpload = await uploadCompanyLogo({ id, data, user, files });
+          if (!resUpload.success) return resUpload;
+          // when the owner set a company available
+          // reset to unvailable after the delay
+          if (data.available) {
+            setTimeout(() => {
+              updateCompanyAvailability({
+                CompanyModel,
+                id,
+                available: false
+              })
+                .then((company: Company) =>
+                  apiEvents.emit(EVENTS.COMPANY.updated, company)
+                )
+                .catch((err: Error) => apiEvents.emit('error', err));
+            }, env.switchToUnavailableDelay);
+          }
+          return { success: true };
+        } catch (error) {
+          return { success: false, error };
         }
       },
       delete: checkPermission

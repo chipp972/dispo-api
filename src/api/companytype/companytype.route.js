@@ -4,7 +4,6 @@ import EventEmitter from 'events';
 import { Model } from 'mongoose';
 import { crud } from '../../service/crud/crud';
 import { EVENTS } from '../../service/websocket/websocket.event';
-import env from '../../config/env';
 import { checkPermission } from '../api.helper';
 import type { Company } from '../company/company';
 

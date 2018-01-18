@@ -48,6 +48,8 @@ export const uploadCompanyLogo = async ({
     const uploadRes = await saveLogoInCloudinary(img.path);
     data.imageCloudId = uploadRes.public_id;
     data.imageUrl = uploadRes.secure_url;
+    // TODO: delete temporary file
+    console.log(files, 'files');
   } catch (err) {
     throw err;
   }
