@@ -7,6 +7,7 @@ import { EVENTS } from '../../service/websocket/websocket.event';
 import { deleteFromCloudinary } from '../../service/cloudinary/cloudinary';
 import { updateCompanyAvailability, uploadCompanyLogo } from './company.helper';
 import env from '../../config/env';
+import { TooMuchCompaniesError } from '../../config/custom.errors';
 import { checkPermission } from '../api.helper';
 import type { Company } from './company';
 
@@ -47,8 +48,16 @@ export const companyCrudRoute = ({
     before: {
       create: async ({ id, data, user, files }) => {
         try {
+          // add owner as user if no owner provided
+          if (!data.owner && user.role !== 'admin') data.owner = user._id;
+          // check if owner or admin
           const resPerm = checkPermission({ id, data, user });
           if (!resPerm.success) return resPerm;
+          // check if user don't have too much companies
+          const companyNumber = await CompanyModel.count({ owner: data.owner });
+          if (companyNumber > env.maxCompanyNumber) {
+            return { success: false, error: new TooMuchCompaniesError() };
+          }
           const resUpload = await uploadCompanyLogo({ id, data, user, files });
           if (!resUpload.success) return resUpload;
           delete data.geoAddress;

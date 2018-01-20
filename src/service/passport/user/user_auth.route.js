@@ -1,7 +1,9 @@
 // @flow
 import { Router, Request, Response, NextFunction } from 'express';
+import EventEmitter from 'events';
 import jwt from 'jsonwebtoken';
 import moment from 'moment';
+import { EVENTS } from '../../websocket/websocket.event';
 import { passportRoutes } from '../passport.constant';
 import { formatResponse, handleUnauthorized } from '../../express/route.helper';
 import { isValidPassword } from './user.helper';
@@ -12,11 +14,13 @@ import { AuthenticationFailedError } from '../../../config/custom.errors';
 import type { Model } from 'mongoose';
 
 type UserAuthRouteOptions = {
-  UserModel: Model
+  UserModel: Model,
+  apiEvents: EventEmitter
 };
 
 export const initUserAuthRoutes = ({
-  UserModel
+  UserModel,
+  apiEvents
 }: UserAuthRouteOptions): Router => {
   const router = Router();
 
@@ -26,10 +30,12 @@ export const initUserAuthRoutes = ({
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const user = await UserModel.create(req.body);
+        const data = filterProperty('password', user.toObject());
+        apiEvents.emit(EVENTS.USER.created, data);
         return formatResponse({
           res,
           success: true,
-          data: filterProperty('password', user.toObject()),
+          data,
           status: 201
         });
       } catch (err) {

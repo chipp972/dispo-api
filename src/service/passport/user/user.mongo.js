@@ -27,10 +27,7 @@ export const getUserModel = (dbConnection: Connection): Model => {
   const preSaveChecks = async function(next) {
     try {
       const user: User = this || {};
-      console.log(user, 'user');
-      // FIXME: only hash password if it is the first time
-      // on update, hash user.newPassword and put it in password if it's not empty
-      if (user.password) {
+      if (user.__isNewPassword) {
         const hash = await hashPassword(user.password);
         user.password = hash;
       }
@@ -39,6 +36,13 @@ export const getUserModel = (dbConnection: Connection): Model => {
       return next(err);
     }
   };
+
+  UserSchema.path('password').set(function(newPassword) {
+    if (newPassword) {
+      this.__isNewPassword = true;
+    }
+    return newPassword || '';
+  });
 
   UserSchema.pre('save', preSaveChecks);
   UserSchema.pre('update', preSaveChecks);

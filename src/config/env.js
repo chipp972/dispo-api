@@ -1,5 +1,6 @@
 // @flow
 export default {
+  debug: process.env.DEBUG === '1' || false,
   nodeEnv: process.env.NODE_ENV || 'development',
   database: {
     redisUrl: process.env.REDIS_URL || 'redis://127.0.0.1:6379/',
@@ -38,6 +39,7 @@ export default {
     user: process.env.MAILGUN_SMTP_LOGIN || '',
     pass: process.env.MAILGUN_SMTP_PASSWORD || ''
   },
+  maxCompanyNumber: process.env.MAX_COMPANY_NB || 5,
   switchToUnavailableDelay:
     parseInt(process.env.SWITCH_TO_UNAVAILABLE, 10) || 900
 };

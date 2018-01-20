@@ -64,3 +64,4 @@ export type ExpressCrudGenerator = ({
   before?: CrudBeforeObject,
   after?: CrudAfterObject
 }) => Router;
+

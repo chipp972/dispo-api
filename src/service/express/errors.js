@@ -21,15 +21,6 @@ export const initErrorHandlers = (app: Application) => {
     });
   }
 
-  // assertion errors
-  app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-    if (err instanceof AssertionError) {
-      res.status(400);
-      res.type = 'AssertionError';
-    }
-    return next(err);
-  });
-
   /* default error handlers */
   app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     const stack = isDev ? err.stack : '';
@@ -37,6 +28,7 @@ export const initErrorHandlers = (app: Application) => {
       ? err.status
       : res.statusCode ? res.statusCode : 500;
     return res.status(statusCode).json({
+      type: err.name || 'error',
       message: err.message,
       stack,
       success: false

@@ -3,8 +3,10 @@ import {
   saveLogoInCloudinary,
   deleteFromCloudinary
 } from '../../service/cloudinary/cloudinary';
+import LOGGER from '../../config/logger';
+import { deleteFile } from '../../helper';
 import { Model } from 'mongoose';
-import type { CrudOptions } from '../../service/crud/crud';
+import type { CrudOptions } from '../../service/crud/crud.type';
 import type { Company } from './company';
 
 export const updateCompanyAvailability = async ({
@@ -30,6 +32,7 @@ export const updateCompanyAvailability = async ({
 /**
  * Verify if the logo of the company is already uploaded
  * and delete it then upload the image given
+ * @return {{ success: boolean }}
  */
 export const uploadCompanyLogo = async ({
   id,
@@ -38,19 +41,21 @@ export const uploadCompanyLogo = async ({
   files
 }: CrudOptions) => {
   try {
+    LOGGER.debug(files, 'files in company operations');
     const img = files && files.companyImage;
-    if (!img) return;
+    if (!img) return { success: true };
     if (data.imageCloudId && /cloudinary/.test(data.imageUrl)) {
       await deleteFromCloudinary({
         publicId: data.imageCloudId
       });
     }
     const uploadRes = await saveLogoInCloudinary(img.path);
+    LOGGER.debug(uploadRes, 'upload image in cloudinary');
     data.imageCloudId = uploadRes.public_id;
     data.imageUrl = uploadRes.secure_url;
-    // TODO: delete temporary file
-    console.log(files, 'files');
-  } catch (err) {
-    throw err;
+    await deleteFile(img.path);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error };
   }
 };

@@ -30,8 +30,8 @@ export const configurePassport = ({
 
   return new Strategy(opts, async (jwtPayload, done) => {
     try {
-      const { _id, email, code, role, password } = jwtPayload;
-      LOGGER.info(jwtPayload, 'jwt-payload');
+      const { _id, email, code, role } = jwtPayload;
+      LOGGER.debug(jwtPayload, 'jwt-payload');
       if (role === 'admin') {
         // admin authentication
         const account: AdminUser = await AdminModel.findOne({
@@ -47,7 +47,7 @@ export const configurePassport = ({
         return done(undefined, account);
       } else {
         // user authentication
-        const user: User = await UserModel.findOne({ _id, email, password });
+        const user: User = await UserModel.findOne({ _id, email });
         if (!user) {
           LOGGER.error('No user account found');
           return done(new AuthenticationFailedError(), false);

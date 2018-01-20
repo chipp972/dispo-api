@@ -21,7 +21,7 @@ export function initAuthRoutes({
   const router = Router();
 
   router.use('/', initAdminAuthRoutes(AdminUserModel));
-  router.use('/', initUserAuthRoutes({ UserModel }));
+  router.use('/', initUserAuthRoutes({ UserModel, apiEvents }));
   router.use('/api', userCrudRoute({ UserModel, apiEvents }));
 
   // authentication failure route

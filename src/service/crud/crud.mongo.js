@@ -1,6 +1,6 @@
 // @flow
 import { Model } from 'mongoose';
-import type { CrudOperations, MongooseCrudGenerator } from './crud';
+import type { CrudOperations, MongooseCrudGenerator } from './crud.type';
 
 export const toRawObject = (obj: any) => (obj.toObject ? obj.toObject() : obj);
 

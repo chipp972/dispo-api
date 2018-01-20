@@ -9,7 +9,6 @@ import { initMongoose } from './service/mongodb/mongoose';
 import { LoggerInstance } from 'winston';
 import LOGGER from './config/logger';
 import env from './config/env';
-import { crud } from './service/crud/crud';
 
 import { initWebsocket } from './service/websocket/websocket';
 

@@ -6,19 +6,23 @@ import { OperationNotPermittedError } from '../config/custom.errors';
  * an admin or an authorized user
  *
  * @param {{ id: string, data: any, user: any }} options
- * @return {Promise<{ success: boolean, error: Error }>}
+ * @return {{ success: boolean, error: Error }}
  */
-export const checkPermission = async ({ id, data, user }) => {
-  if (env.auth.isAuthenticationActivated) {
-    if (user._id === '') {
-      // not authenticated
+export const checkPermission = ({ id, data, user }) => {
+  try {
+    if (env.auth.isAuthenticationActivated) {
+      if (user._id === '') {
+        // not authenticated
+        return { success: false, error: new OperationNotPermittedError() };
+      }
+      if (user.role === 'admin' || user._id == id || data.owner == user._id) {
+        // if user is admin or owns the ressource
+        return { success: true };
+      }
       return { success: false, error: new OperationNotPermittedError() };
     }
-    if (user.role === 'admin' || user._id == id || data.owner == user._id) {
-      // if user is admin or owns the ressource
-      return { success: true };
-    }
-    return { success: false, error: new OperationNotPermittedError() };
+    return { success: true };
+  } catch (error) {
+    return { success: false, error };
   }
-  return { success: true };
 };

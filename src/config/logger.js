@@ -9,7 +9,7 @@ const LOGGER: LoggerInstance = new Logger({
       colorize: env.nodeEnv === 'development',
       handleExceptions: true,
       json: false,
-      level: 'info'
+      level: env.debug ? 'debug' : 'info'
     })
   ]
 });

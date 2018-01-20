@@ -6,7 +6,7 @@ import type {
   CrudAfterMiddleware,
   CrudBeforeMiddleware,
   ExpressCrudGenerator
-} from './crud';
+} from './crud.type';
 
 export const defaultResponseFormatter = (req: Request, res: Response): void =>
   res

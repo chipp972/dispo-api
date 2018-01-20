@@ -1,6 +1,6 @@
 // @flow
 
-class CustomError extends Error {
+export class CustomError extends Error {
   // status: number
   constructor(options: { message: string, status?: number }) {
     super(options.message);
@@ -53,5 +53,11 @@ export class UnauthorizedAccessError extends CustomError {
 export class NotFoundError extends CustomError {
   constructor() {
     super({ message: 'Not found', status: 404 });
+  }
+}
+
+export class TooMuchCompaniesError extends CustomError {
+  constructor() {
+    super({ message: 'User reached max company number', status: 400 });
   }
 }

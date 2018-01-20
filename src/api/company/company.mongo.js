@@ -1,6 +1,7 @@
 // @flow
 import { Model, Schema, Connection } from 'mongoose';
 import { mapUtil } from '../../service/google/map.utils';
+import { InvalidAddressError, InvalidCompanyTypeError } from './company.error';
 import type { Company } from './company';
 
 export const getCompanyModel = (
@@ -64,9 +65,15 @@ export const getCompanyModel = (
 
   CompanySchema.post('save', async function(err, doc, next) {
     // TODO: reformat errors
+    console.log(doc, 'whwhwhhwh');
     console.log(err.message, '********************');
     console.log('company.mongo');
-    next(err);
+    if (/type/.test(err.message)) {
+      return next(new InvalidCompanyTypeError());
+    } else if (/geometry/.test(err.message)) {
+      return next(new InvalidAddressError());
+    }
+    return next(err);
   });
 
   return dbConnection.model('Company', CompanySchema);
