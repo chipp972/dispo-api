@@ -55,13 +55,12 @@ export default function applyMiddlewares(
 
   // authentication
   if (env.auth.isAuthenticationActivated) {
-    const pass = passport.use(configurePassport({ UserModel, AdminModel }));
-    app.use(pass.initialize());
+    passport.use(configurePassport({ UserModel, AdminModel }));
+    app.use(passport.initialize());
     app.use('/api', (req: Request, res: Response, next: NextFunction) => {
-      pass.authenticate('jwt', (err, user, info) => {
-        if (err) {
-          return next(new AuthenticationError());
-        }
+      passport.authenticate('jwt', (err, user, info) => {
+        // TODO: check if it is a token expiration error
+        if (err) return next(new AuthenticationError());
         req.user = user;
         return next();
       })(req, res, next);

@@ -16,11 +16,12 @@ export default {
       ? process.env.IS_AUTHENTICATION_ACTIVATED === '1'
       : true,
     secretOrKey: process.env.AUTH_SECRET_OR_KEY || 'space_cat',
-    sessionExpiration: process.env.SESSION_EXPIRATION || 86400,
+    sessionExpiration: parseInt(process.env.SESSION_EXPIRATION, 10) || 86400,
     saltRounds: parseInt(process.env.SALT_ROUNDS, 10) || 12,
     admin: {
-      validDuration: process.env.ADMIN_CODE_VALID_DURATION || 300,
-      sessionExpiration: process.env.ADMIN_SESSION_EXPIRATION || 2700
+      validDuration: parseInt(process.env.ADMIN_CODE_VALID_DURATION, 10) || 300,
+      sessionExpiration:
+        parseInt(process.env.ADMIN_SESSION_EXPIRATION, 10) || 2700
     }
   },
   google: {
@@ -37,5 +38,6 @@ export default {
     user: process.env.MAILGUN_SMTP_LOGIN || '',
     pass: process.env.MAILGUN_SMTP_PASSWORD || ''
   },
-  switchToUnavailableDelay: parseInt(process.env.SWITCH_TO_UNAVAILABLE, 10) || 900
+  switchToUnavailableDelay:
+    parseInt(process.env.SWITCH_TO_UNAVAILABLE, 10) || 900
 };

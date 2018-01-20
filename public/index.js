@@ -201,7 +201,10 @@ export const authAPI = (fetchFunction: FetchFunction, url: string): AuthAPI => {
         getAPIData({
           method: 'POST',
           path: '/auth/user/login',
-          data
+          data: {
+            email: data.email ? data.email.toLowerCase() : '',
+            password: data.password
+          }
         }),
       logout: (userId: string) =>
         getAPIData({
