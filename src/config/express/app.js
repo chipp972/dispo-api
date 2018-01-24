@@ -1,9 +1,13 @@
 // @flow
-import express, { Application } from 'express';
+import express, { Application, Router } from 'express';
 import { Model } from 'mongoose';
 import applyMiddlewares from './middlewares';
-import { initRoutes } from './routes';
-import type { AppRoutes } from './routes';
+import { initErrorHandlers } from './errors';
+
+type AppRoutes = {
+  auth: Router[],
+  api: Router[]
+};
 
 /**
  * Initialize the application
@@ -24,7 +28,11 @@ export default function initApp(
     applyMiddlewares(app, UserModel, AdminModel);
 
     /* routes */
-    initRoutes(app, appRoutes);
+    appRoutes.auth.forEach((route: Router) => app.use(route));
+    appRoutes.api.forEach((route: Router) => app.use('/api', route));
+
+    /* errors */
+    initErrorHandlers(app);
 
     return app;
   } catch (err) {

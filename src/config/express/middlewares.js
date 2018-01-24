@@ -1,15 +1,13 @@
 // @flow
 import helmet from 'helmet';
-import morgan from 'morgan';
-import bodyParser from 'body-parser';
-import passport from 'passport';
-import cors, { CorsOptions } from 'cors';
-import { configurePassport } from '../passport/passport.config';
-import env from '../../config/env';
-import { AuthenticationError } from '../../config/custom.errors';
-import { Application, Request, Response, NextFunction } from 'express';
-import { Model } from 'mongoose';
 import formData from 'express-form-data';
+import bodyParser from 'body-parser';
+import morgan from 'morgan';
+import cors, { CorsOptions } from 'cors';
+import { Application } from 'express';
+import { Model } from 'mongoose';
+import { authenticationMiddleware } from '../../service/passport/passport.config';
+import env from '../env';
 
 /**
  * add middlewares to express app
@@ -55,16 +53,7 @@ export default function applyMiddlewares(
 
   // authentication
   if (env.auth.isAuthenticationActivated) {
-    passport.use(configurePassport({ UserModel, AdminModel }));
-    app.use(passport.initialize());
-    app.use('/api', (req: Request, res: Response, next: NextFunction) => {
-      passport.authenticate('jwt', (err, user, info) => {
-        // TODO: check if it is a token expiration error
-        if (err) return next(new AuthenticationError());
-        req.user = user;
-        return next();
-      })(req, res, next);
-    });
+    authenticationMiddleware({ path: '/api', app, UserModel, AdminModel });
   }
 
   return app;

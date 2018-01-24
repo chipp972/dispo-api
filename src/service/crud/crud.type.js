@@ -1,13 +1,12 @@
 // @flow
 import { Model } from 'mongoose';
 import { Router, Request, Response, NextFunction } from 'express';
-
-export type ReqUser = { _id: string, role?: string };
+import EventEmitter from 'events';
 
 export type CrudOptions = {
   id: string,
   data: any,
-  user: ReqUser,
+  user?: any,
   files?: { [filename: string]: { path: string } }
 };
 
@@ -33,35 +32,57 @@ export type CrudAfterMiddleware = (result: *, req: Request) => Promise<*>;
 export type CrudBeforeMiddleware = CrudOptions => Promise<PreResult>;
 
 export type CrudAfterObject = {
-  getAll: CrudAfterMiddleware,
-  getById: CrudAfterMiddleware,
-  create: CrudAfterMiddleware,
-  update: CrudAfterMiddleware,
-  delete: CrudAfterMiddleware
+  all?: CrudAfterMiddleware,
+  getAll?: CrudAfterMiddleware,
+  getById?: CrudAfterMiddleware,
+  create?: CrudAfterMiddleware,
+  update?: CrudAfterMiddleware,
+  delete?: CrudAfterMiddleware
 };
 
 export type CrudBeforeObject = {
-  getAll: CrudBeforeMiddleware,
-  getById: CrudBeforeMiddleware,
-  create: CrudBeforeMiddleware,
-  update: CrudBeforeMiddleware,
-  delete: CrudBeforeMiddleware
+  all?: CrudAfterMiddleware,
+  getAll?: CrudBeforeMiddleware,
+  getById?: CrudBeforeMiddleware,
+  create?: CrudBeforeMiddleware,
+  update?: CrudBeforeMiddleware,
+  delete?: CrudBeforeMiddleware
+};
+
+export type EventObject = {
+  created?: string,
+  updated?: string,
+  deleted?: string
+};
+
+export type RouteGeneratorOptions = {
+  operation: CrudOperation,
+  status: number,
+  before?: CrudBeforeMiddleware,
+  after?: CrudAfterMiddleware,
+  beforeAll?: CrudBeforeMiddleware,
+  afterAll?: CrudAfterMiddleware,
+  event?: string,
+  emitter?: EventEmitter
 };
 
 export type MongooseCrudGenerator = (model: Model) => CrudOperations;
 
 export type CrudGenOptions = {
-  path: string,
+  path?: string,
   model: Model,
   responseFormatter?: Middleware,
   before?: CrudBeforeObject,
-  after?: CrudAfterObject
+  after?: CrudAfterObject,
+  emitter?: EventEmitter,
+  events?: EventObject
 };
 
 export type ExpressCrudGenerator = ({
   operations: CrudOperations,
   responseFormatter?: Middleware,
   before?: CrudBeforeObject,
-  after?: CrudAfterObject
+  after?: CrudAfterObject,
+  emitter?: EventEmitter,
+  events?: EventObject
 }) => Router;
-

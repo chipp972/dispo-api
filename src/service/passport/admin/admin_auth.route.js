@@ -6,7 +6,7 @@ import env from '../../../config/env';
 import { generate } from 'shortid';
 import moment from 'moment-timezone';
 import { passportRoutes } from '../passport.constant';
-import { handleUnauthorized } from '../../express/route.helper';
+import { handleUnauthorized } from '../passport.helper';
 import type { Model } from 'mongoose';
 import type { AuthResponse, PasswordLessStartResponse } from './admin';
 

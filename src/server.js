@@ -3,14 +3,15 @@ import http, { Server } from 'http';
 import EventEmitter from 'events';
 // import https from 'https';
 
-import initApp from './service/express/app';
+import initApp from './config/express/app';
 // import initRedis from './service/redis/redis';
-import { initMongoose } from './service/mongodb/mongoose';
+import { initMongoose } from './config/mongodb/mongoose';
 import { LoggerInstance } from 'winston';
 import LOGGER from './config/logger';
 import env from './config/env';
 
 import { initWebsocket } from './service/websocket/websocket';
+import { EVENTS } from './service/websocket/websocket.event';
 
 // auth
 import { getAdminModel } from './service/passport/admin/admin.mongo';
@@ -25,9 +26,6 @@ import { userCrudRoute } from './service/passport/user/user.route';
 import { companyCrudRoute } from './api/company/company.route';
 import { companyTypeCrudRoute } from './api/companytype/companytype.route';
 import { companyPopularityCrudRoute } from './api/companypopularity/companypopularity.route';
-
-// types
-import type { AppRoutes } from './service/express/routes';
 
 /**
  * Handle server errors
@@ -72,17 +70,30 @@ function handleServerError(server: Server, logger: LoggerInstance) {
 
     // mongoose models
     const AdminUserModel = getAdminModel(mongodb);
-    const UserModel = getUserModel(mongodb);
-    const CompanyTypeModel = getCompanyTypeModel(mongodb);
-    const CompanyModel = getCompanyModel(mongodb, UserModel, CompanyTypeModel);
+    const UserModel = getUserModel(mongodb, apiEvents, EVENTS.USER);
+    const CompanyTypeModel = getCompanyTypeModel(
+      mongodb,
+      apiEvents,
+      EVENTS.COMPANY_TYPE
+    );
+    const CompanyModel = getCompanyModel(
+      mongodb,
+      UserModel,
+      CompanyTypeModel,
+      env.allowEarlyRefresh,
+      apiEvents,
+      EVENTS.COMPANY
+    );
     const CompanyPopularityModel = getCompanyPopularityModel(
       mongodb,
       CompanyModel,
-      UserModel
+      UserModel,
+      apiEvents,
+      EVENTS.COMPANY_POPULARITY
     );
 
     // express routes
-    const appRoutes: AppRoutes = {
+    const appRoutes = {
       auth: [initAuthRoutes({ UserModel, AdminUserModel, apiEvents })],
       api: [
         userCrudRoute({ UserModel, apiEvents }),

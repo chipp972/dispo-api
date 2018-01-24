@@ -1,11 +1,15 @@
 // @flow
+import { emitEvents } from '../api.helper';
 import { Schema, Model, Connection } from 'mongoose';
+import EventEmitter from 'events';
 import type { CompanyPopularity } from './companypopularity';
 
 export const getCompanyPopularityModel = (
   dbConnection: Connection,
   CompanyModel: Model,
-  UserModel: Model
+  UserModel: Model,
+  emitter: EventEmitter,
+  events: CrudEvents
 ): Model => {
   const CompanyPopularitySchema = new Schema({
     companyId: { type: Schema.Types.ObjectId, ref: 'Company' },
@@ -33,6 +37,12 @@ export const getCompanyPopularityModel = (
 
   CompanyPopularitySchema.pre('save', preSaveChecks);
   CompanyPopularitySchema.pre('update', preSaveChecks);
+
+  emitEvents({
+    schema: CompanyPopularitySchema,
+    emitter,
+    events
+  });
 
   return dbConnection.model('CompanyPopularity', CompanyPopularitySchema);
 };

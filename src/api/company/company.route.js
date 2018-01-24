@@ -7,7 +7,7 @@ import { EVENTS } from '../../service/websocket/websocket.event';
 import { deleteFromCloudinary } from '../../service/cloudinary/cloudinary';
 import { updateCompanyAvailability, uploadCompanyLogo } from './company.helper';
 import env from '../../config/env';
-import { TooMuchCompaniesError } from '../../config/custom.errors';
+import { TooMuchCompaniesError } from './company.error';
 import { checkPermission } from '../api.helper';
 import type { Company } from './company';
 
@@ -49,7 +49,9 @@ export const companyCrudRoute = ({
       create: async ({ id, data, user, files }) => {
         try {
           // add owner as user if no owner provided
-          if (!data.owner && user.role !== 'admin') data.owner = user._id;
+          if (!data.owner && user && user.role !== 'admin') {
+            data.owner = user._id;
+          }
           // check if owner or admin
           const resPerm = checkPermission({ id, data, user });
           if (!resPerm.success) return resPerm;
@@ -69,26 +71,11 @@ export const companyCrudRoute = ({
       },
       update: async ({ id, data, user, files }) => {
         try {
-          delete data.geoAddress;
           const resPerm = checkPermission({ id, data, user });
           if (!resPerm.success) return resPerm;
           const resUpload = await uploadCompanyLogo({ id, data, user, files });
           if (!resUpload.success) return resUpload;
-          // when the owner set a company available
-          // reset to unvailable after the delay
-          if (data.available) {
-            setTimeout(() => {
-              updateCompanyAvailability({
-                CompanyModel,
-                id,
-                available: false
-              })
-                .then((company: Company) =>
-                  apiEvents.emit(EVENTS.COMPANY.updated, company)
-                )
-                .catch((err: Error) => apiEvents.emit('error', err));
-            }, env.switchToUnavailableDelay);
-          }
+          delete data.geoAddress;
           return { success: true };
         } catch (error) {
           return { success: false, error };
@@ -97,14 +84,23 @@ export const companyCrudRoute = ({
       delete: checkPermission
     },
     after: {
-      create: async (result: any, req: Request) => {
-        apiEvents.emit(EVENTS.COMPANY.created, result);
-      },
       update: async (result: any, req: Request) => {
-        apiEvents.emit(EVENTS.COMPANY.updated, result);
-      },
-      delete: async (result: any, req: Request) => {
-        apiEvents.emit(EVENTS.COMPANY.deleted, result);
+        // when the owner set a company available
+        // reset to unvailable after the delay
+        if (result.available) {
+          setTimeout(async () => {
+            try {
+              const company: Company = await updateCompanyAvailability({
+                CompanyModel,
+                id: result._id,
+                available: false
+              });
+              apiEvents.emit(EVENTS.COMPANY.updated, company);
+            } catch (err) {
+              apiEvents.emit('error', err);
+            }
+          }, env.switchToUnavailableDelay);
+        }
       }
     }
   });

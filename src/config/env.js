@@ -41,5 +41,7 @@ export default {
   },
   maxCompanyNumber: process.env.MAX_COMPANY_NB || 5,
   switchToUnavailableDelay:
-    parseInt(process.env.SWITCH_TO_UNAVAILABLE, 10) || 900
+    parseInt(process.env.SWITCH_TO_UNAVAILABLE, 10) || 900,
+  allowEarlyRefresh:
+    process.env.ALLOW_EARLY_AVAILABILITY_REFRESH === '1' || false
 };

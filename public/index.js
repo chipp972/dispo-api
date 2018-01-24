@@ -237,7 +237,7 @@ export const dataAPI = (fetchFunction: FetchFunction, url: string) => (
         getAPIData({
           path: `/api/company/${companyId}`,
           method: 'PATCH',
-          data: {}
+          data: { available: true }
         })
     },
     user: generateCrudOperations(getAPIData, '/api/user'),

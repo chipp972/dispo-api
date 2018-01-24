@@ -1,9 +1,15 @@
 // @flow
+import { emitEvents } from '../../../api/api.helper';
 import { Schema, Model, Connection } from 'mongoose';
 import { hashPassword } from './user.helper';
+import EventEmitter from 'events';
 import type { User } from './user';
 
-export const getUserModel = (dbConnection: Connection): Model => {
+export const getUserModel = (
+  dbConnection: Connection,
+  emitter: EventEmitter,
+  events: CrudEvents
+): Model => {
   const UserSchema = new Schema({
     email: {
       type: String,
@@ -24,10 +30,17 @@ export const getUserModel = (dbConnection: Connection): Model => {
     address: String
   });
 
+  UserSchema.set('toObject', {
+    transform: function(doc, ret, options) {
+      delete ret.password;
+      return ret;
+    }
+  });
+
   const preSaveChecks = async function(next) {
     try {
       const user: User = this || {};
-      if (user.__isNewPassword) {
+      if (user.isModified('password')) {
         const hash = await hashPassword(user.password);
         user.password = hash;
       }
@@ -37,15 +50,14 @@ export const getUserModel = (dbConnection: Connection): Model => {
     }
   };
 
-  UserSchema.path('password').set(function(newPassword) {
-    if (newPassword) {
-      this.__isNewPassword = true;
-    }
-    return newPassword || '';
-  });
-
   UserSchema.pre('save', preSaveChecks);
   UserSchema.pre('update', preSaveChecks);
+
+  emitEvents({
+    schema: UserSchema,
+    emitter,
+    events
+  });
 
   return dbConnection.model('User', UserSchema);
 };

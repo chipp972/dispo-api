@@ -5,11 +5,13 @@ import { generateCrudRoutes } from './crud.route';
 import type { CrudGenOptions } from './crud.type';
 
 export const crud = ({
-  path,
+  path = '/',
   model,
   responseFormatter,
   before,
-  after
+  after,
+  emitter,
+  events
 }: CrudGenOptions): Router => {
   const router = Router();
   const operations = generateCrudOperations(model);
@@ -19,7 +21,9 @@ export const crud = ({
       operations,
       responseFormatter,
       before,
-      after
+      after,
+      emitter,
+      events
     })
   );
   return router;

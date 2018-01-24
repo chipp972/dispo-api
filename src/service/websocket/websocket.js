@@ -17,13 +17,6 @@ export type WebsocketOptions = {
   CompanyPopularityModel: Model
 };
 
-const addReadHandler = (model, modelName, socket) => {
-  socket.on(EVENTS[modelName].read, async (filters: any) => {
-    const resultList = await model.find(filters);
-    socket.emit(EVENTS[modelName].read, resultList);
-  });
-};
-
 export const initWebsocket = ({
   server,
   apiEvents,
@@ -36,7 +29,18 @@ export const initWebsocket = ({
   const ws: SocketIO.Server = io(server);
 
   const emitEvent = (event: string, key: string) => {
-    apiEvents.on(event, (data: any) => ws.emit(event, data));
+    apiEvents.on(event, (data: any) => {
+      LOGGER.debug(event, JSON.stringify(data));
+      ws.emit(event, data);
+    });
+  };
+
+  const addReadHandler = (model, modelName, socket) => {
+    socket.on(EVENTS[modelName].read, async (filters: any) => {
+      const resultList = await model.find(filters);
+      LOGGER.debug(EVENTS[modelName].read, resultList);
+      socket.emit(EVENTS[modelName].read, resultList);
+    });
   };
 
   // emit events to clients when apiEvent emit something
@@ -47,15 +51,16 @@ export const initWebsocket = ({
 
   // client interactions
   ws.on('connection', (socket: SocketIO.Socket) => {
-    LOGGER.info('client connected');
+    const clientStr = `| client ${socket.id}`;
+    LOGGER.debug('connected', clientStr);
 
     addReadHandler(CompanyModel, 'COMPANY', socket);
     addReadHandler(CompanyTypeModel, 'COMPANY_TYPE', socket);
     addReadHandler(CompanyPopularityModel, 'COMPANY_POPULARITY', socket);
     addReadHandler(UserModel, 'USER', socket);
 
-    socket.on('error', (err: Error) => LOGGER.error(err));
-    socket.on('close', () => LOGGER.info('client disconnected'));
+    socket.on('error', (err: Error) => LOGGER.error(err, clientStr));
+    socket.on('close', () => LOGGER.debug('disconnected', clientStr));
   });
 
   return ws;

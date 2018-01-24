@@ -1,50 +1,62 @@
 // @flow
+import { emitEvents } from '../api.helper';
 import { Model, Schema, Connection } from 'mongoose';
 import { mapUtil } from '../../service/google/map.utils';
 import { InvalidAddressError, InvalidCompanyTypeError } from './company.error';
+import EventEmitter from 'events';
 import type { Company } from './company';
 
 export const getCompanyModel = (
   dbConnection: Connection,
   UserModel: Model,
-  CompanyTypeModel: Model
+  CompanyTypeModel: Model,
+  allowEarlyRefresh: boolean = false,
+  emitter: EventEmitter,
+  events: CrudEvents
 ): Model => {
-  const GeocodeSchema = new Schema({
-    latitude: { type: Number },
-    longitude: { type: Number }
-  });
+  const GeocodeSchema = new Schema(
+    {
+      latitude: { type: Number },
+      longitude: { type: Number }
+    },
+    { _id: false }
+  );
 
-  const CompanySchema = new Schema({
-    owner: { type: Schema.Types.ObjectId, ref: 'User' },
-    name: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-      lowercase: true
+  const CompanySchema = new Schema(
+    {
+      owner: { type: Schema.Types.ObjectId, ref: 'User' },
+      name: {
+        type: String,
+        required: true,
+        unique: true,
+        trim: true,
+        lowercase: true
+      },
+      imageCloudId: String,
+      imageUrl: String,
+      type: { type: Schema.Types.ObjectId, ref: 'CompanyType' },
+      siret: {
+        type: String,
+        unique: true,
+        trim: true,
+        maxlength: 14,
+        minlength: 14,
+        required: false
+      },
+      address: { type: String, required: true, trim: true },
+      geoAddress: GeocodeSchema,
+      phoneNumber: String,
+      available: { type: Boolean, default: false }
     },
-    imageCloudId: String,
-    imageUrl: String,
-    type: { type: Schema.Types.ObjectId, ref: 'CompanyType' },
-    siret: {
-      type: String,
-      unique: true,
-      trim: true,
-      maxlength: 14,
-      minlength: 14,
-      required: false
-    },
-    address: { type: String, required: true, trim: true },
-    geoAddress: GeocodeSchema,
-    phoneNumber: String,
-    available: { type: Boolean, default: false },
-    lastUpdate: Date
-  });
+    { timestamps: true }
+  );
 
   const preSaveChecks = async function(next) {
     try {
       const company: Company = this || {};
-      company.lastUpdate = new Date();
+      if (company.__earlyRefresh && !allowEarlyRefresh) {
+        return next(new Error('cannot refresh availability now'));
+      }
       // update geocode location
       const geoLocation = await mapUtil.getGeocode(company.address);
       company.geoAddress = geoLocation;
@@ -60,8 +72,21 @@ export const getCompanyModel = (
     }
   };
 
+  CompanySchema.path('available').set(function(newAvailableValue) {
+    if (newAvailableValue && this.available) {
+      this.__earlyRefresh = true;
+    }
+    return newAvailableValue || false;
+  });
+
   CompanySchema.pre('save', preSaveChecks);
   CompanySchema.pre('update', preSaveChecks);
+
+  emitEvents({
+    schema: CompanySchema,
+    emitter,
+    events
+  });
 
   CompanySchema.post('save', async function(err, doc, next) {
     // TODO: reformat errors

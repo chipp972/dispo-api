@@ -13,4 +13,8 @@ export class InvalidAddressError extends CustomError {
   }
 }
 
-
+export class TooMuchCompaniesError extends CustomError {
+  constructor() {
+    super({ message: 'User reached max company number', status: 400 });
+  }
+}

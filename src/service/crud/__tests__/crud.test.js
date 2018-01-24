@@ -3,7 +3,7 @@ import test from 'tape';
 import express, { Response } from 'express';
 import request from 'supertest';
 import { mockedModel, mockedStore } from './crud.mock';
-import crud from '../crud';
+import { crud } from '../crud';
 
 const app = express();
 

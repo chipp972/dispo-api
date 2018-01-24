@@ -27,12 +27,6 @@ export const companyTypeCrudRoute = ({
       delete: checkPermission
     },
     after: {
-      create: async (result: any, req: Request) => {
-        apiEvents.emit(EVENTS.COMPANY_TYPE.created, result);
-      },
-      update: async (result: any, req: Request) => {
-        apiEvents.emit(EVENTS.COMPANY_TYPE.updated, result);
-      },
       delete: async (result: any, req: Request) => {
         const { defaultCompanyType } = req.body;
         if (defaultCompanyType) {
@@ -51,7 +45,6 @@ export const companyTypeCrudRoute = ({
             apiEvents.emit(EVENTS.COMPANY.deleted, company);
           });
         }
-        apiEvents.emit(EVENTS.COMPANY_TYPE.deleted, result);
       }
     }
   });

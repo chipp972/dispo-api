@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import moment from 'moment';
 import { EVENTS } from '../../websocket/websocket.event';
 import { passportRoutes } from '../passport.constant';
-import { formatResponse, handleUnauthorized } from '../../express/route.helper';
+import { formatResponse, handleUnauthorized } from '../passport.helper';
 import { isValidPassword } from './user.helper';
 import { filterProperty } from '../../../helper';
 import env from '../../../config/env';

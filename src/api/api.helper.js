@@ -26,3 +26,26 @@ export const checkPermission = ({ id, data, user }) => {
     return { success: false, error };
   }
 };
+
+/**
+ * add event emission when the documents are
+ * created, updated and deleted
+ */
+export const emitEvents = ({ schema, emitter, events }) => {
+  schema.pre('save', function(next) {
+    this.wasNew = this.isNew;
+    next();
+  });
+
+  schema.post('save', function(obj) {
+    if (obj.wasNew) {
+      emitter.emit(events.created, obj.toObject());
+    } else {
+      emitter.emit(events.updated, obj.toObject());
+    }
+  });
+
+  schema.post('remove', function(obj) {
+    emitter.emit(events.deleted, obj.toObject());
+  });
+};

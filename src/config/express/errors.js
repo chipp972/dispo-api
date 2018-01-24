@@ -1,9 +1,8 @@
 // @flow
 import { Application, Request, Response, NextFunction } from 'express';
-import env from '../../config/env';
-import LOGGER from '../../config/logger';
-import { NotFoundError } from '../../config/custom.errors';
-import { AssertionError } from 'assert';
+import env from '../env';
+import LOGGER from '../logger';
+import { NotFoundError } from '../custom.errors';
 
 export const initErrorHandlers = (app: Application) => {
   const isDev = env.nodeEnv === 'development';

@@ -26,7 +26,7 @@ export const generateCrudOperations: MongooseCrudGenerator = (
     const obj = await model.create(data);
     return toRawObject(obj);
   },
-  update: async ({ id, data, user }): Promise<*> => {
+  update: async ({ id, data }): Promise<*> => {
     const obj = await model.findById(id);
     delete data._id;
     delete data.__v;
@@ -34,7 +34,7 @@ export const generateCrudOperations: MongooseCrudGenerator = (
     await newObj.save();
     return toRawObject(newObj);
   },
-  delete: async ({ id, user }): Promise<*> => {
+  delete: async ({ id }): Promise<*> => {
     const obj = await model.findById(id);
     await obj.remove();
     return toRawObject(obj);

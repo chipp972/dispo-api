@@ -1,9 +1,13 @@
 // @flow
+import { emitEvents } from '../api.helper';
 import { Schema, Model, Connection } from 'mongoose';
+import EventEmitter from 'events';
 import type { CompanyType } from './companytype';
 
 export const getCompanyTypeModel = (
-  dbConnection: Connection
+  dbConnection: Connection,
+  emitter: EventEmitter,
+  events: CrudEvents
 ): Model<CompanyType> => {
   const CompanyTypeSchema = new Schema({
     name: {
@@ -14,5 +18,12 @@ export const getCompanyTypeModel = (
       required: true
     }
   });
+
+  emitEvents({
+    schema: CompanyTypeSchema,
+    emitter,
+    events
+  });
+
   return dbConnection.model('CompanyType', CompanyTypeSchema);
 };

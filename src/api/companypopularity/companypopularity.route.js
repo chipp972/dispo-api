@@ -33,17 +33,6 @@ export const companyPopularityCrudRoute = ({
     before: {
       update: checkPermission,
       delete: checkPermission
-    },
-    after: {
-      create: async (result: any, req: Request) => {
-        apiEvents.emit(EVENTS.COMPANY_POPULARITY.created, result);
-      },
-      update: async (result: any, req: Request) => {
-        apiEvents.emit(EVENTS.COMPANY_POPULARITY.updated, result);
-      },
-      delete: async (result: any, req: Request) => {
-        apiEvents.emit(EVENTS.COMPANY_POPULARITY.deleted, result);
-      }
     }
   });
 };

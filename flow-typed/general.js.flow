@@ -1,0 +1,9 @@
+// @flow
+
+declare type CrudEvents = {
+  read: string,
+  created: string,
+  updated: string,
+  deleted: string
+};
+
