@@ -1,24 +1,21 @@
 // @flow
 import type {
   Company as Comp,
-  CompanyData as CompData
-} from '../src/api/company/company.js.flow';
-import type {
-  User as U,
-  UserData as UData
-} from '../src/service/passport/user/user.js.flow';
+  CompanyData as CompData,
+} from '../src/api/company/company.mongo';
+import type { User as U, UserData as UData } from '../src/api/user/user.mongo';
 import type {
   CompanyType as CompType,
-  CompanyTypeData as CompTypeData
-} from '../src/api/companytype/companytype.js.flow';
+  CompanyTypeData as CompTypeData,
+} from '../src/api/companytype/companytype.mongo';
 import type {
   CompanyPopularity as CompPop,
-  CompanyPopularityData as CompPopData
-} from '../src/api/companypopularity/companypopularity.js.flow';
+  CompanyPopularityData as CompPopData,
+} from '../src/api/popularity/popularity.mongo';
 import type {
   AuthResponse,
-  PasswordLessStartResponse
-} from '../src/service/passport/admin/admin';
+  PasswordLessStartResponse,
+} from '../src/api/passport/passwordless/passwordless.route';
 
 export type FetchFunction = Function;
 
@@ -26,7 +23,7 @@ export type FetchOptions = {
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   path: string,
   data?: any,
-  headers?: { [key: string]: string }
+  headers?: { [key: string]: string },
 };
 
 export interface FetchWithTokenOptions extends FetchOptions {
@@ -40,15 +37,15 @@ export type AuthAPI = {
   admin: {
     sendCode: ({ email: string }) => Promise<PasswordLessStartRes>,
     authenticate: ({ email: string, code: string }) => Promise<AuthResponse>,
-    logout: (tokenId: string) => Promise<{ success: boolean }>
+    logout: (tokenId: string) => Promise<{ success: boolean }>,
   },
   user: {
-    register: UserData => Promise<*>,
+    register: (UserData) => Promise<*>,
     login: ({ email: string, password: string }) => Promise<AuthResponse>,
-    logout: ({ userId: string }) => Promise<{ success: boolean }>,
+    logout: (userId: string) => Promise<{ success: boolean }>,
     facebook: any,
-    google: any
-  }
+    google: any,
+  },
 };
 
 export type Company = Comp;
@@ -65,18 +62,18 @@ export type CrudOperations<T1, T2> = {
   get: (id: string) => Promise<T2>,
   create: (data: T1) => Promise<T2>,
   edit: (id: string, field: *) => Promise<T2>,
-  remove: (id: string, data: T2) => Promise<T2>
+  remove: (id: string, data: T2) => Promise<T2>,
 };
 
 export type DataAPI = {
   company: CrudOperations<CompanyData, Company>,
   user: CrudOperations<UserData, User>,
-  companyType: CrudOperations<CompanyTypeData, CompanyType>
+  companyType: CrudOperations<CompanyTypeData, CompanyType>,
 };
 
 export const toFormData = (obj: any) => {
-  const formData = new FormData();
-  Object.entries(obj).forEach(([key, value]) => formData.append(key, value));
+  const formData: FormData = new FormData();
+  Object.keys(obj).forEach((key: string) => formData.append(key, obj[key]));
   return formData;
 };
 
@@ -88,31 +85,31 @@ const generateCrudOperations = function<T1, T2>(
     getAll: (): Promise<T2[]> =>
       getAPIData({
         path: basePath,
-        method: 'GET'
+        method: 'GET',
       }),
     get: (id: string): Promise<T2> =>
       getAPIData({
         path: `${basePath}/${id}`,
-        method: 'GET'
+        method: 'GET',
       }),
     create: (data: T1): Promise<T2> =>
       getAPIData({
         path: basePath,
         method: 'POST',
-        data
+        data,
       }),
     edit: (id: string, fields: *): Promise<T2> =>
       getAPIData({
         path: `${basePath}/${id}`,
         method: 'PATCH',
-        data: fields
+        data: fields,
       }),
     remove: (id: string, data: *): Promise<T2> =>
       getAPIData({
         path: `${basePath}/${id}`,
         method: 'DELETE',
-        data
-      })
+        data,
+      }),
   };
 };
 
@@ -125,11 +122,11 @@ export function fetchBasic(
     new Promise((resolve, reject) => {
       const baseHeaders = isForm
         ? {
-            Accept: 'application/json'
+            Accept: 'application/json',
           }
         : {
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
+            "Accept": 'application/json',
+            'Content-Type': 'application/json',
           };
       const body =
         method === 'HEAD' || method === 'GET' || !data
@@ -139,9 +136,9 @@ export function fetchBasic(
         method,
         headers: {
           ...baseHeaders,
-          ...headers
+          ...headers,
         },
-        body
+        body,
       })
         .then((res: any) => res.json())
         .then((res: any) => (res.success ? resolve(res.data) : reject(res)))
@@ -161,7 +158,7 @@ export const fetchWithToken = (
       method,
       path,
       data,
-      headers: { ...headers, authorization: token }
+      headers: { ...headers, authorization: token },
     })
       .then((res: any) => resolve(res))
       .catch((err: Error) => reject(err));
@@ -175,54 +172,54 @@ export const authAPI = (fetchFunction: FetchFunction, url: string): AuthAPI => {
         getAPIData({
           method: 'POST',
           path: '/auth/admin/start',
-          data
+          data,
         }),
       authenticate: (data: { email: string, code: string }) =>
         getAPIData({
           method: 'POST',
           path: '/auth/admin/authenticate',
-          data
+          data,
         }),
       logout: (tokenId: string) =>
         getAPIData({
           method: 'POST',
           path: '/auth/admin/logout',
-          data: { tokenId }
-        })
+          data: { tokenId },
+        }),
     },
     user: {
-      register: (data: UserData) =>
+      register: (data: UserData): Promise<any> =>
         getAPIData({
           method: 'POST',
           path: '/auth/user/register',
-          data
+          data,
         }),
-      login: (data: { email: string, password: string }) =>
+      login: (data: { email: string, password: string }): Promise<any> =>
         getAPIData({
           method: 'POST',
           path: '/auth/user/login',
           data: {
             email: data.email ? data.email.toLowerCase() : '',
-            password: data.password
-          }
+            password: data.password,
+          },
         }),
-      logout: (userId: string) =>
+      logout: (userId: string): Promise<{ success: boolean }> =>
         getAPIData({
           method: 'POST',
           path: '/auth/user/logout',
-          data: { userId }
+          data: { userId },
         }),
       facebook: {
         path: '/auth/user/facebook/login',
         callback: '/auth/user/facebook/callback',
-        method: 'POST'
+        method: 'POST',
       },
       google: {
         path: '/auth/user/google/login',
         callback: '/auth/user/google/callback',
-        method: 'POST'
-      }
-    }
+        method: 'POST',
+      },
+    },
   };
 };
 
@@ -237,14 +234,14 @@ export const dataAPI = (fetchFunction: FetchFunction, url: string) => (
         getAPIData({
           path: `/api/company/${companyId}`,
           method: 'PATCH',
-          data: { available: true }
-        })
+          data: { available: true },
+        }),
     },
     user: generateCrudOperations(getAPIData, '/api/user'),
     companyType: generateCrudOperations(getAPIData, '/api/companytype'),
     companyPopularity: generateCrudOperations(
       getAPIData,
       '/api/companypopularity'
-    )
+    ),
   };
 };

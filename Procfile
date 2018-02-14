@@ -1,3 +1,3 @@
-web: node build/server.js
-devapi: nodemon --exec "babel-node" --watch src/ ./src/server.js
-test: tape-watch -r babel-register "src/**/__tests__/*"
+web: node build/index.js
+devapi: nodemon --exec "babel-node" --watch src/ ./src/index.js
+test: tape-watch --require babel-register "src/**/__tests__/*" --clear --pipe tap-spec

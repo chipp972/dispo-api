@@ -1,19 +1,19 @@
 // @flow
 import { createClient } from '@google/maps';
-import env from '../../config/env';
+import { env } from '../../config/env';
 
 const mapClient = createClient({
   key: env.google.apiKey,
   // clientId: env.google.clientId,
   // clientSecret: env.google.clientSecret,
   language: 'fr',
-  Promise
+  Promise,
 });
 
 export type MapUtils = {
   getGeocode: (
     address: string
-  ) => Promise<{ latitude: number, longitude: number }>
+  ) => Promise<{ latitude: number, longitude: number }>,
 };
 
 export const mapUtil: MapUtils = {
@@ -21,7 +21,7 @@ export const mapUtil: MapUtils = {
     new Promise((resolve, reject) => {
       mapClient
         .geocode({
-          address
+          address,
         })
         .asPromise()
         .then((res: any) => res.json.results[0].geometry.location)
@@ -29,5 +29,5 @@ export const mapUtil: MapUtils = {
           resolve({ latitude: res.lat, longitude: res.lng })
         )
         .catch((err: Error) => reject(err));
-    })
+    }),
 };

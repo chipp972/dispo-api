@@ -1,8 +1,8 @@
 // @flow
 import mongoose, { ConnectionOptions, Connection } from 'mongoose';
-import { Mockgoose } from 'mockgoose';
 import LOGGER from '../../config/logger';
-import env from '../../config/env';
+import { env } from '../../config/env';
+import { initMockgoose } from './mockgoose';
 
 export const initMongoose = async (): Promise<Connection> => {
   (mongoose: any).Promise = global.Promise;
@@ -14,7 +14,7 @@ export const initMongoose = async (): Promise<Connection> => {
     autoIndex: !isProd,
     promiseLibrary: global.Promise,
     poolSize: env.database.mongoPoolSize,
-    autoReconnect: isProd
+    autoReconnect: isProd,
   };
 
   try {
@@ -28,19 +28,13 @@ export const initMongoose = async (): Promise<Connection> => {
       LOGGER.error(err, 'mongoose connexion');
       throw err;
     }
+    // Use mockgoose to mock the data store
     try {
-      // Use mockgoose to mock the data store
       LOGGER.debug('Using Mockgoose');
-      const mockgoose: Mockgoose = new Mockgoose(mongoose);
-      await mockgoose.prepareStorage();
-      const mockDb: Connection = await mongoose.createConnection(
-        env.database.mongodbUri,
-        options
-      );
-      return mockDb;
-    } catch (error) {
-      LOGGER.error(error);
-      throw error;
+      const mockedDb = await initMockgoose(env.database.mongodbUri, options);
+      return mockedDb;
+    } catch (err) {
+      LOGGER.error(err);
     }
   }
 };

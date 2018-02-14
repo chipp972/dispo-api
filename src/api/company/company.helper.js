@@ -1,59 +1,45 @@
 // @flow
-import {
-  saveLogoInCloudinary,
-  deleteFromCloudinary
-} from '../../service/cloudinary/cloudinary';
-import LOGGER from '../../config/logger';
-import { deleteFile } from '../../helper';
-import { Model } from 'mongoose';
-import type { CrudOptions } from '../../service/crud/crud.type';
-import type { Company } from './company';
-
-export const updateCompanyAvailability = async ({
-  CompanyModel,
-  id,
-  available,
-  apiEvents
-}: {
-  CompanyModel: Model,
-  id: string,
-  available: boolean
-}): Promise<Company> => {
-  try {
-    const company = await CompanyModel.findById(id);
-    const newCompany = Object.assign(company, { available });
-    await newCompany.save();
-    return newCompany.toObject();
-  } catch (err) {
-    throw err;
-  }
+type Options = {
+  data: { imageCloudId?: string, imageUrl?: string },
+  files?: { companyImage: any },
+  LOGGER: any,
+  deleteImage: ({ publicId: string }) => Promise<any>,
+  saveImage: (
+    path: string
+  ) => Promise<{ public_id: string, secure_url: string }>,
 };
 
 /**
  * Verify if the logo of the company is already uploaded
  * and delete it then upload the image given
- * @return {{ success: boolean }}
+ *
+ * @param {Options} options
+ * @return {{ success: boolean, error: Error }}
  */
 export const uploadCompanyLogo = async ({
-  id,
   data,
-  user,
-  files
-}: CrudOptions) => {
+  files,
+  LOGGER,
+  deleteImage,
+  saveImage,
+}: Options) => {
   try {
     LOGGER.debug(files, 'files in company operations');
     const img = files && files.companyImage;
     if (!img) return { success: true };
-    if (data.imageCloudId && /cloudinary/.test(data.imageUrl)) {
-      await deleteFromCloudinary({
-        publicId: data.imageCloudId
+    if (
+      data.imageCloudId &&
+      data.imageUrl &&
+      /cloudinary/.test(data.imageUrl)
+    ) {
+      await deleteImage({
+        publicId: data.imageCloudId,
       });
     }
-    const uploadRes = await saveLogoInCloudinary(img.path);
+    const uploadRes = await saveImage(img.path);
     LOGGER.debug(uploadRes, 'upload image in cloudinary');
     data.imageCloudId = uploadRes.public_id;
     data.imageUrl = uploadRes.secure_url;
-    await deleteFile(img.path);
     return { success: true };
   } catch (error) {
     return { success: false, error };

@@ -5,19 +5,20 @@ import { crud } from 'another-express-crud';
 import { mongooseCrudConnector } from 'crud-mongoose-connector';
 
 type Options = {
-  CompanyTypeModel: Model,
+  CompanyPopularityModel: Model,
   isAuthenticationActivated: boolean,
 };
 
-export const companyTypeCrudRoute = ({
-  CompanyTypeModel,
+export const companyPopularityCrudRoute = ({
+  CompanyPopularityModel,
   isAuthenticationActivated,
 }: Options): Router => {
   return crud({
-    path: '/companytype',
-    operations: mongooseCrudConnector(CompanyTypeModel),
+    path: '/companypopularity',
+    operations: mongooseCrudConnector(CompanyPopularityModel),
     policy: {
-      create: 'admin',
+      create: 'user',
+      read: 'guest',
       update: 'admin',
       delete: 'admin',
       isDisabled: !isAuthenticationActivated,

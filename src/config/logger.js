@@ -1,6 +1,6 @@
 // @flow
 import { Logger, LoggerInstance, transports } from 'winston';
-import env from './env';
+import { env } from './env';
 
 const LOGGER: LoggerInstance = new Logger({
   exitOnError: true,
@@ -9,9 +9,9 @@ const LOGGER: LoggerInstance = new Logger({
       colorize: env.nodeEnv === 'development',
       handleExceptions: true,
       json: false,
-      level: env.debug ? 'debug' : 'info'
-    })
-  ]
+      level: env.debug ? 'debug' : 'info',
+    }),
+  ],
 });
 
 export default LOGGER;

@@ -1,13 +1,16 @@
 // @flow
-import { emitEvents } from '../api.helper';
-import { Schema, Model, Connection } from 'mongoose';
-import EventEmitter from 'events';
-import type { CompanyType } from './companytype';
+import { Document, Schema, Model, Connection } from 'mongoose';
+import eventPlugin from 'mongoose-plugin-events';
+
+export interface CompanyTypeData {
+  name: string;
+}
+export interface CompanyType extends CompanyTypeData, Document {
+  _id: string;
+}
 
 export const getCompanyTypeModel = (
-  dbConnection: Connection,
-  emitter: EventEmitter,
-  events: CrudEvents
+  mongooseConnection: Connection
 ): Model<CompanyType> => {
   const CompanyTypeSchema = new Schema({
     name: {
@@ -15,15 +18,10 @@ export const getCompanyTypeModel = (
       unique: true,
       trim: true,
       lowercase: true,
-      required: true
-    }
+      required: true,
+    },
   });
+  CompanyTypeSchema.plugin(eventPlugin, {});
 
-  emitEvents({
-    schema: CompanyTypeSchema,
-    emitter,
-    events
-  });
-
-  return dbConnection.model('CompanyType', CompanyTypeSchema);
+  return mongooseConnection.model('CompanyType', CompanyTypeSchema);
 };

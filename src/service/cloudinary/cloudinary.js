@@ -1,6 +1,8 @@
 // @flow
 // check doc at https://cloudinary.com/documentation/node_image_upload#incoming_transformations
 import cloudinary from 'cloudinary';
+import { deleteFile } from './cloudinary.helper';
+import LOGGER from '../../config/logger';
 
 export type CloudinaryResult = {
   public_id: string,
@@ -11,11 +13,11 @@ export type CloudinaryResult = {
   bytes: number,
   ressource_type: string,
   url: string,
-  secure_url: string
+  secure_url: string,
 };
 
 cloudinary.config({
-  secure: true
+  secure: true,
 });
 
 /**
@@ -27,12 +29,16 @@ export const saveLogoInCloudinary = async (
   filePath: string
 ): Promise<CloudinaryResult> => {
   try {
-    return await saveInCloudinary(filePath, {
+    LOGGER.debug(`saving ${filePath}`, 'saveLogoInCloudinary');
+    const result: CloudinaryResult = await saveInCloudinary(filePath, {
       width: 90,
       height: 90,
-      crop: 'thumb'
+      crop: 'thumb',
     });
+    LOGGER.debug(`saved ${JSON.stringify(result)}`, 'saveLogoInCloudinary');
+    return result;
   } catch (err) {
+    LOGGER.error(err, 'saveLogoInCloudinary');
     throw err;
   }
 };
@@ -43,16 +49,20 @@ export const saveLogoInCloudinary = async (
  * @param {any} options
  * @return {CloudinaryResult}
  */
-export const saveInCloudinary = (
+const saveInCloudinary = (
   filePath: string,
   options: any
 ): Promise<CloudinaryResult> =>
   new Promise((resolve, reject) => {
     cloudinary.uploader.upload(
       filePath,
-      (result: CloudinaryResult, err: Error) => {
-        if (err) reject(err);
-        resolve(result);
+      (result: CloudinaryResult, uploadError?: Error) => {
+        deleteFile(filePath)
+          .catch(
+            (deleteError: Error) =>
+              uploadError ? reject(uploadError) : reject(deleteError)
+          )
+          .then(() => (uploadError ? reject(uploadError) : resolve(result)));
       },
       options
     );
@@ -65,13 +75,18 @@ export const saveInCloudinary = (
  * @return {Promise}
  */
 export const deleteFromCloudinary = ({
-  publicId
+  publicId,
 }: {
-  publicId: string
+  publicId: string,
 }): Promise<any> =>
   new Promise((resolve, reject) => {
-    cloudinary.v2.api.delete_resources(
-      [publicId],
-      (error, result) => (error ? reject(error) : resolve(result))
-    );
+    LOGGER.debug(`deleting ${publicId}`, 'deleteFromCloudinary');
+    cloudinary.v2.api.delete_resources([publicId], (error, result) => {
+      if (error) {
+        LOGGER.error(error, 'deleteFromCloudinary');
+        reject(error);
+      }
+      LOGGER.debug(`deleted ${result}`, 'deleteFromCloudinary');
+      resolve(result);
+    });
   });

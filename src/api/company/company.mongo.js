@@ -1,27 +1,50 @@
 // @flow
-import { emitEvents } from '../api.helper';
-import { Model, Schema, Connection } from 'mongoose';
-import { mapUtil } from '../../service/google/map.utils';
-import { InvalidAddressError, InvalidCompanyTypeError } from './company.error';
-import EventEmitter from 'events';
-import type { Company } from './company';
+/* eslint no-invalid-this: 0 */
+import { Document, Model, Schema, Connection } from 'mongoose';
+import eventPlugin from 'mongoose-plugin-events';
+import {
+  ForbiddenEarlyRefreshError,
+  InvalidAddressError,
+  InvalidCompanyTypeError,
+  InvalidOwnerError,
+} from './company.error';
 
-export const getCompanyModel = (
-  dbConnection: Connection,
+export type CompanyData = {
+  owner: string,
+  name: string,
+  type: string,
+  siret?: string,
+  imageUrl?: string,
+  imageCloudId?: string,
+  address: string,
+  phoneNumber?: string,
+};
+
+export interface Company extends CompanyData, Document {
+  _id: string;
+  geoAddress: { latitude: number, longitude: number };
+  available: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+type Options = {
+  mongooseConnection: Connection,
   UserModel: Model,
   CompanyTypeModel: Model,
-  allowEarlyRefresh: boolean = false,
-  emitter: EventEmitter,
-  events: CrudEvents
-): Model => {
-  const GeocodeSchema = new Schema(
-    {
-      latitude: { type: Number },
-      longitude: { type: Number }
-    },
-    { _id: false }
-  );
+  allowEarlyRefresh: boolean,
+  getGeocode: (address: string) => { latitude: number, longitude: number },
+  deleteImage: ({ publicId: string }) => Promise<any>,
+};
 
+export const getCompanyModel = ({
+  mongooseConnection,
+  UserModel,
+  CompanyTypeModel,
+  allowEarlyRefresh = false,
+  getGeocode,
+  deleteImage,
+}: Options): Model<Company> => {
   const CompanySchema = new Schema(
     {
       owner: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -30,7 +53,7 @@ export const getCompanyModel = (
         required: true,
         unique: true,
         trim: true,
-        lowercase: true
+        lowercase: true,
       },
       imageCloudId: String,
       imageUrl: String,
@@ -41,31 +64,40 @@ export const getCompanyModel = (
         trim: true,
         maxlength: 14,
         minlength: 14,
-        required: false
+        required: false,
       },
       address: { type: String, required: true, trim: true },
-      geoAddress: GeocodeSchema,
+      geoAddress: {
+        latitude: { type: Number },
+        longitude: { type: Number },
+      },
       phoneNumber: String,
-      available: { type: Boolean, default: false }
+      available: { type: Boolean, default: false },
     },
     { timestamps: true }
   );
+  CompanySchema.plugin(eventPlugin, {});
 
   const preSaveChecks = async function(next) {
     try {
       const company: Company = this || {};
+      this.__isNew = this.isNew;
       if (company.__earlyRefresh && !allowEarlyRefresh) {
-        return next(new Error('cannot refresh availability now'));
+        throw new ForbiddenEarlyRefreshError();
       }
       // update geocode location
-      const geoLocation = await mapUtil.getGeocode(company.address);
-      company.geoAddress = geoLocation;
+      try {
+        const geoLocation = await getGeocode(company.address);
+        company.geoAddress = geoLocation;
+      } catch (err) {
+        throw new InvalidAddressError();
+      }
       // check owner
       const user = await UserModel.findById(company.owner);
-      if (!user) return next(new Error('invalid company owner'));
+      if (!user) throw new InvalidOwnerError();
       // check company type
       const companytype = await CompanyTypeModel.findById(company.type);
-      if (!companytype) return next(new Error('invalid company type'));
+      if (!companytype) throw new InvalidCompanyTypeError();
       return next();
     } catch (err) {
       return next(err);
@@ -82,24 +114,14 @@ export const getCompanyModel = (
   CompanySchema.pre('save', preSaveChecks);
   CompanySchema.pre('update', preSaveChecks);
 
-  emitEvents({
-    schema: CompanySchema,
-    emitter,
-    events
-  });
-
   CompanySchema.post('save', async function(err, doc, next) {
-    // TODO: reformat errors
-    console.log(doc, 'whwhwhhwh');
-    console.log(err.message, '********************');
-    console.log('company.mongo');
-    if (/type/.test(err.message)) {
-      return next(new InvalidCompanyTypeError());
-    } else if (/geometry/.test(err.message)) {
-      return next(new InvalidAddressError());
+    if (this.__isNew && this.imageCloudId) {
+      await deleteImage({ publicId: this.imageCloudId });
     }
-    return next(err);
+    next(err);
   });
 
-  return dbConnection.model('Company', CompanySchema);
+  const CompanyModel = mongooseConnection.model('Company', CompanySchema);
+
+  return CompanyModel;
 };
