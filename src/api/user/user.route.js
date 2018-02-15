@@ -16,7 +16,7 @@ export const UserCrudConfig = ({
   operations: mongooseCrudConnector(UserModel),
   policy: {
     create: 'guest',
-    read: 'owner',
+    read: 'user',
     update: 'owner',
     delete: 'owner',
     isDisabled: !isAuthenticationActivated,

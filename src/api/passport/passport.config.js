@@ -98,11 +98,10 @@ const configurePassport = ({
             logger.error('No admin session found');
             return done(createNewAuthenticationError(), false);
           }
-        } else {
+        } else if (password) {
           // email-password authentication
           const credentials: Credentials = await CredentialsModel.findOne({
             email,
-            password,
             role,
           });
           if (!credentials) {

@@ -1,6 +1,6 @@
 // @flow
 import { Request, Response, NextFunction } from 'express';
-import { UnauthorizedAccessError } from './passport.error';
+import { createNewUnauthorizedAccessError } from './passport.error';
 
 type FormatResponseOptions = {
   res: Response,
@@ -22,7 +22,7 @@ export const handleUnauthorized = (
   req: Request,
   res: Response,
   next: NextFunction
-) => next(new UnauthorizedAccessError());
+) => next(createNewUnauthorizedAccessError());
 
 export const errorHandlerWrapper = (
   middleware: (Request, Response, NextFunction) => any

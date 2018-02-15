@@ -1,15 +1,5 @@
 // @flow
-import { CustomError, customErrorFactory } from 'customizable-error';
-
-export class AuthenticationError extends CustomError {
-  constructor() {
-    super({
-      message: 'Authentication is needed',
-      status: 401,
-      code: 'AUTHENTICATION_ERROR',
-    });
-  }
-}
+import { customErrorFactory } from 'customizable-error';
 
 export const createNewAuthenticationError = () =>
   customErrorFactory({
@@ -19,15 +9,6 @@ export const createNewAuthenticationError = () =>
     code: 'AUTHENTICATION_ERROR',
   });
 
-export class AuthenticationFailedError extends CustomError {
-  constructor() {
-    super({
-      message: 'Authentication failed',
-      status: 401,
-      code: 'AUTHENTICATION_FAILED',
-    });
-  }
-}
 export const createNewAuthenticationFailedError = () =>
   customErrorFactory({
     name: 'AuthenticationFailedError',
@@ -36,20 +17,10 @@ export const createNewAuthenticationFailedError = () =>
     code: 'AUTHENTICATION_FAILED',
   });
 
-export class BadRequestError extends CustomError {
-  constructor() {
-    super({ message: 'Bad request', status: 400 });
-  }
-}
-
-export class OperationNotPermittedError extends CustomError {
-  constructor() {
-    super({ message: 'Operation not permitted', status: 403 });
-  }
-}
-
-export class UnauthorizedAccessError extends CustomError {
-  constructor() {
-    super({ message: 'Unauthorized access', status: 403 });
-  }
-}
+export const createNewUnauthorizedAccessError = () =>
+  customErrorFactory({
+    name: 'UnauthorizedAccessError',
+    message: 'Unauthorized access',
+    status: 403,
+    code: 'UNAUTHORIZED_ACCESS',
+  });

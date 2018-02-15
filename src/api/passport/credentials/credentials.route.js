@@ -99,9 +99,21 @@ export const initCredentialsRoutes = ({
               return { success: false, error };
             }
           },
-          update: async ({ id, data }) => {
+          update: async ({ id, data, user }) => {
             try {
-              await crudModel.update({ id, data });
+              if (!data.password) return { success: true };
+              const credentials = await CredentialsModel.findOne({
+                email: user.email,
+              });
+              await crudModel.update({
+                id: credentials._id,
+                data: {
+                  _id: credentials._id,
+                  email: data.email,
+                  oldPassword: data.oldPassword,
+                  password: data.password,
+                },
+              });
               return { success: true };
             } catch (error) {
               return { success: false, error };
