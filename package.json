@@ -1,6 +1,6 @@
 {
   "name": "dispo-api",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Back-end API for dispo app",
   "main": "./lib/index.js",
   "scripts": {
