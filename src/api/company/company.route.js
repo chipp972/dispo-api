@@ -39,6 +39,12 @@ export const companyCrudRoute = ({
     },
     hooks: {
       before: {
+        all: async ({ id, data, user, files }) => {
+          if (data) {
+            delete data.geoAddress;
+          }
+          return { success: true };
+        },
         create: async ({ id, data, user, files }) => {
           try {
             // add owner as user if no owner provided
