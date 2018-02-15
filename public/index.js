@@ -60,6 +60,7 @@ export type CompanyPopularityData = CompPopData;
 export type CrudOperations<T1, T2> = {
   getAll: () => Promise<T2[]>,
   get: (id: string) => Promise<T2>,
+  read: ({ id?: string, filters: any }) => Promise<T2[]>,
   create: (data: T1) => Promise<T2>,
   edit: (id: string, field: *) => Promise<T2>,
   remove: (id: string, data: T2) => Promise<T2>,
@@ -92,6 +93,19 @@ const generateCrudOperations = function<T1, T2>(
         path: `${basePath}/${id}`,
         method: 'GET',
       }),
+    read: ({ id, filters }: { id?: string, filters?: any }): Promise<T2[]> => {
+      const path = id
+        ? `${basePath}/${id}`
+        : filters
+          ? `${basePath}?${Object.keys(filters)
+              .map((key: string) => `${key}=${filters[key]}`)
+              .join('&')}`
+          : basePath;
+      return getAPIData({
+        path,
+        method: 'GET',
+      });
+    },
     create: (data: T1): Promise<T2> =>
       getAPIData({
         path: basePath,

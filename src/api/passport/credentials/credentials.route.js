@@ -38,13 +38,18 @@ export const initCredentialsRoutes = ({
     .post(async (req: Request, res: Response, next: NextFunction) => {
       try {
         delete req.body.role; // prevent anybody from gaining admin privileges
-        await CredentialsModel.create(req.body);
-        const user = await UserModel.create(req.body);
-        return formatResponse({
-          res,
-          data: user,
-          status: 201,
-        });
+        const credentials = await CredentialsModel.create(req.body);
+        try {
+          const user = await UserModel.create(req.body);
+          return formatResponse({
+            res,
+            data: user,
+            status: 201,
+          });
+        } catch (err) {
+          credentials.remove();
+          return next(err);
+        }
       } catch (err) {
         next(err);
       }
@@ -63,7 +68,9 @@ export const initCredentialsRoutes = ({
         const token = jwt.sign(credentials.toJSON(), secretOrKey, {
           expiresIn: tokenExpiration,
         });
+        const user = await UserModel.findOne({ email });
         const data = {
+          tokenId: user._id,
           token,
           expireAt: moment()
             .add(tokenExpiration, 'seconds')

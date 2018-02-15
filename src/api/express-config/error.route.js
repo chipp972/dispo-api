@@ -29,13 +29,12 @@ export const setupErrorRoutes = () => {
   /* default error handlers */
   app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     const stack = isProd ? '' : err.stack;
-    const statusCode = err.status
-      ? err.status
-      : res.statusCode ? res.statusCode : 500;
+    const statusCode = err.status || res.statusCode || 500;
     return res.status(statusCode).json({
       type: err.name || 'error',
       message: err.message,
       stack,
+      code: err.code || 'ERROR',
       success: false,
     });
   });

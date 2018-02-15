@@ -70,6 +70,7 @@ export function initPasswordLessRoutes({
       }
     });
 
+  // login
   router
     .route(routes.authenticate)
     .post(async (req: Request, res: Response, next: NextFunction) => {

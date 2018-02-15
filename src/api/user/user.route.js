@@ -1,5 +1,5 @@
 // @flow
-import { Router } from 'express';
+import type { CrudGenOptions } from 'another-express-crud';
 import { mongooseCrudConnector } from 'crud-mongoose-connector';
 import type { Model } from 'mongoose';
 
@@ -11,7 +11,7 @@ type Options = {
 export const UserCrudConfig = ({
   UserModel,
   isAuthenticationActivated,
-}: Options): Router => ({
+}: Options): CrudGenOptions => ({
   path: '/user',
   operations: mongooseCrudConnector(UserModel),
   policy: {

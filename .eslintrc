@@ -25,7 +25,8 @@
     "require-jsdoc": "off",
     "react/prop-types": "off",
     "new-cap": "off",
-    "max-len": "warn"
+    "max-len": "warn",
+    "quote-props": "warn"
   },
   "settings": {
     "react": {
