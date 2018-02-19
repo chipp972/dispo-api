@@ -1,8 +1,10 @@
 // @flow
-import { CustomError } from 'customizable-error';
+import { customErrorFactory } from 'customizable-error';
 
-export class InvalidPasswordError extends CustomError {
-  constructor() {
-    super({ message: 'Login or Password is invalid', status: 401 });
-  }
-}
+export const createNewInvalidOldPasswordError = () =>
+  customErrorFactory({
+    name: 'InvalidOldPasswordError',
+    code: 'INVALID_OLD_PASSWORD',
+    message: 'Old password is invalid',
+    status: 400,
+  });

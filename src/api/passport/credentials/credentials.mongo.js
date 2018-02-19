@@ -2,7 +2,7 @@
 /* eslint no-invalid-this: 0 */
 import { Document, Schema, Model, Connection } from 'mongoose';
 import { hashPassword, isValidPassword } from './credentials.helper';
-import { InvalidPasswordError } from './credentials.error';
+import { createNewInvalidOldPasswordError } from './credentials.error';
 
 export type Credentials = {
   email: string,
@@ -50,7 +50,7 @@ export const getCredentialsModel = ({
           credentials.oldPassword
         );
         if (!isValid) {
-          return next(new InvalidPasswordError());
+          return next(createNewInvalidOldPasswordError());
         }
       }
       if (credentials.isNew || credentials.isModified('password')) {
