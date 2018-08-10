@@ -83,7 +83,7 @@ export const env: EnvObject = {
   },
   maxCompanyNumber: parseInt(process.env.MAX_COMPANY_NB, 10) || 5,
   switchToUnavailableDelay:
-    parseInt(process.env.SWITCH_TO_UNAVAILABLE, 10) || 900,
+    parseInt(process.env.SWITCH_TO_UNAVAILABLE, 10) || 900000,
   allowEarlyRefresh:
     process.env.ALLOW_EARLY_AVAILABILITY_REFRESH === '1' || false,
 };

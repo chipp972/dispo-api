@@ -45,7 +45,7 @@ The server will emit a response with the same event name and the result (an
 array):
 
 ```javascript
-socket.on('READ_COMPANYTYPE', companyTypeList => {
+socket.on('READ_COMPANYTYPE', (companyTypeList) => {
   console.log(`Here are my companyTypes : ${companyTypeList}`);
 });
 ```
@@ -56,7 +56,7 @@ Events will be sent every time someone create, update or delete data in the app
 (including the client that was at the origin of the event).
 
 ```javascript
-socket.on('CREATE_COMPANY', company => {
+socket.on('CREATE_COMPANY', (company) => {
   console.log(`The company ${company.name} was created`);
 });
 ```

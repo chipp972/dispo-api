@@ -57,7 +57,7 @@ export const getCredentialsModel = ({
         const hash = await hashPassword(credentials.password, saltRounds);
         credentials.password = hash;
       }
-      delete credentials.oldPassword;
+      credentials.oldPassword = undefined;
       return next();
     } catch (err) {
       return next(err);

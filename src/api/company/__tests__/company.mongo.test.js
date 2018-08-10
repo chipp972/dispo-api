@@ -56,22 +56,22 @@ test('Company model tests', async (group) => {
         company.toObject(),
         'created event emitted with created object'
       );
-      resetDb();
-      t.end();
     } catch (err) {
-      resetDb();
       t.fail(err.message);
-      t.end();
     }
+    resetDb();
+    t.end();
   });
 
   // TODO: test field validation
-  // TODO: test update
+  // TODO: test update (return value + db state + event emission)
   // TODO: test early refresh
   // TODO: test getGeocode returning an error make create/update fail
-  // TODO: test not found user make create/update fail
-  // TODO: test not found companyType make create/update fail
-  // TODO: test delete
+  // TODO: test create with invalid owner
+  // TODO: test update with invalid owner
+  // TODO: test create with invalid type
+  // TODO: test update with invalid type
+  // TODO: test delete (return value + db state + event emission)
 
   group.end();
 });

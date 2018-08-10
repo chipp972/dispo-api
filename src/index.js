@@ -24,7 +24,7 @@ import {
 function handleServerError(server: Server) {
   server.on('error', (err: any) => {
     if (err.syscall !== 'listen') {
-      LOGGER.Error(err.message);
+      LOGGER.error(err.message);
       throw err;
     }
 
